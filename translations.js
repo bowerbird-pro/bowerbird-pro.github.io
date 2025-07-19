@@ -55,7 +55,7 @@ const translations = {
         "guide_tm_4": "모델을 로드하고 시작 버튼을 누르세요.",
         "guide_tm_5": "인식된 결과가 자동으로 MCU로 전송됩니다.",
         "developer_info": "👨‍💻 개발자 정보",
-        "developer_name": ".",
+        "developer_name": "김석전",
         "app_description_1": "WebSerial과 WebBLE를 이용해 TM 결과물을 유/무선 MCU로 전송하는 로컬 웹앱입니다.",
         "app_description_2": "아두이노, 마이크로비트, ESP32, 라즈베리파이 피코 등 모든 MCU를 사용할 수 있습니다.",
         "app_description_3": "Chrome, Edge 브라우저에서 테스트 되었습니다. 하드웨어는 블록코딩이나 텍스트 코딩을 이용해 사전 코드 업로드가 필요합니다.",
