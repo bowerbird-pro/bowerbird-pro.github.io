@@ -82,15 +82,15 @@
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <div id="finger-count-display" class="flex justify-around items-baseline text-center text-teal-600 opacity-50">
                                 <div>
-                                    <h4 class="text-base font-semibold text-gray-600">총 손가락 개수</h4>
+                                    <h4 class="text-base font-semibold text-gray-600" data-translate-key="total_finger_count">총 손가락 개수</h4>
                                     <p class="text-3xl font-bold"><span id="total-finger-count">0</span></p>
                                 </div>
                                 <div>
-                                    <h4 class="text-base font-semibold text-gray-600">왼손</h4>
+                                    <h4 class="text-base font-semibold text-gray-600" data-translate-key="left_hand">왼손</h4>
                                     <p class="text-3xl font-bold"><span id="left-finger-count">0</span></p>
                                 </div>
                                 <div>
-                                    <h4 class="text-base font-semibold text-gray-600">오른손</h4>
+                                    <h4 class="text-base font-semibold text-gray-600" data-translate-key="right_hand">오른손</h4>
                                     <p class="text-3xl font-bold"><span id="right-finger-count">0</span></p>
                                 </div>
                             </div>
@@ -184,7 +184,6 @@
                 return null;
             },
 
-            // ▼▼▼ [수정됨] 총개수, 왼손, 오른손 개수를 각각 계산하고 UI에 업데이트 ▼▼▼
             processFingerCount(allHands, allHandedness) {
                 UIManager.elements.fingerCountDisplay.classList.remove('opacity-50');
                 let leftHandCount = 0;
@@ -194,7 +193,6 @@
                     allHands.forEach((landmarks) => {
                         let currentHandCount = 0;
                         
-                        // 네 손가락 카운트
                         for (let j = 1; j < 5; j++) {
                             if (landmarks[FINGER_TIPS[j]].y < landmarks[FINGER_TIPS[j] - 2].y) {
                                 currentHandCount++;
@@ -203,35 +201,31 @@
 
                         const isRightHand = landmarks[17].x < landmarks[0].x;
 
-                        // 엄지 손가락 카운트
                         if (isRightHand) {
                             if (landmarks[FINGER_TIPS[0]].x > landmarks[FINGER_TIPS[0] - 1].x) {
                                 currentHandCount++;
                             }
-                            rightHandCount = currentHandCount; // 오른손 개수 업데이트
+                            rightHandCount = currentHandCount;
                         } else {
                             if (landmarks[FINGER_TIPS[0]].x < landmarks[FINGER_TIPS[0] - 1].x) {
                                 currentHandCount++;
                             }
-                            leftHandCount = currentHandCount; // 왼손 개수 업데이트
+                            leftHandCount = currentHandCount;
                         }
                     });
                     
                     const totalCount = leftHandCount + rightHandCount;
 
-                    // UI 요소 업데이트
                     UIManager.elements.totalFingerCount.textContent = totalCount;
                     UIManager.elements.leftFingerCount.textContent = leftHandCount;
                     UIManager.elements.rightFingerCount.textContent = rightHandCount;
 
-                    // MCU로 전송할 데이터 (총개수,왼손,오른손)
                     return `${totalCount},${leftHandCount},${rightHandCount},0`;
                 } catch (error) {
                     console.error('손가락 카운팅 에러:', error);
                     return null;
                 }
             },
-            // ▲▲▲ [수정됨] 총개수, 왼손, 오른손 개수를 각각 계산하고 UI에 업데이트 ▲▲▲
 
             processDualCoords(allHands, allHandedness, width, height) {
                 UIManager.elements.dualCoordsDisplay.classList.remove('opacity-50');
@@ -268,7 +262,6 @@
         
         const UIManager = {
             elements: {},
-            // ▼▼▼ [수정됨] 새로운 UI 요소 추가 ▼▼▼
             init() {
                 this.elements = {
                     video: document.getElementById('input_video'),
@@ -294,9 +287,6 @@
                     rightY: document.getElementById('right-y-coord'),
                 };
             },
-            // ▲▲▲ [수정됨] 새로운 UI 요소 추가 ▲▲▲
-
-            // ▼▼▼ [수정됨] 새로운 UI 요소 리셋 로직 추가 ▼▼▼
             resetAllDisplays() {
                 ['coordsDisplay', 'thumbDistDisplay', 'fingerCountDisplay', 'dualCoordsDisplay'].forEach(key => {
                     if (this.elements[key]) this.elements[key].classList.add('opacity-50');
@@ -310,18 +300,16 @@
                 this.elements.leftX.textContent = '0'; this.elements.leftY.textContent = '0';
                 this.elements.rightX.textContent = '0'; this.elements.rightY.textContent = '0';
             },
-            // ▲▲▲ [수정됨] 새로운 UI 요소 리셋 로직 추가 ▲▲▲
-
             updateConnectionStatus(connected, type = '') {
-                this.elements.connectionStatus.textContent = connected ? `${type} 연결됨` : '연결 안됨';
+                this.elements.connectionStatus.textContent = _t(connected ? 'status_connected' : 'status_disconnected', { connectionType: type });
                 this.elements.connectionStatus.className = `status ${connected ? 'connected' : 'disconnected'}`;
                 if (type.toLowerCase().includes('serial')) {
                     this.elements.connectSerialBtn.disabled = connected;
                     this.elements.disconnectSerialBtn.disabled = !connected;
                 }
             },
-            updateStartButton(text, disabled) {
-                this.elements.startBtn.textContent = text;
+            updateStartButton(textKey, disabled) {
+                this.elements.startBtn.textContent = _t(textKey);
                 this.elements.startBtn.disabled = disabled;
             }
         };
@@ -348,9 +336,9 @@
                     const port = await navigator.serial.requestPort(); 
                     await port.open({ baudRate: CONFIG.SERIAL_BAUD_RATE }); 
                     this.port = port;
-                    UIManager.updateConnectionStatus(true, '시리얼');
+                    UIManager.updateConnectionStatus(true, 'Serial');
                 } catch(e) {
-                    if (e.name !== 'NotFoundError') alert(`시리얼 연결 오류: ${e.message}`);
+                    if (e.name !== 'NotFoundError') alert(_t('serial_connect_error', { error: e.message }));
                 } 
             },
             async disconnectSerial() { 
@@ -367,10 +355,10 @@
                     const server = await this.bleDevice.gatt.connect();
                     const service = await server.getPrimaryService(CONFIG.BLE_SERVICE_UUID);
                     this.bleCharacteristic = await service.getCharacteristic(CONFIG.BLE_CHARACTERISTIC_UUID);
-                    UIManager.updateConnectionStatus(true, '블루투스'); 
-                    alert('블루투스 연결 성공!');
+                    UIManager.updateConnectionStatus(true, 'Bluetooth'); 
+                    alert(_t('ble_connect_success'));
                 } catch(e) {
-                    alert(`블루투스 연결 오류: ${e.message}`); 
+                    alert(_t('ble_connect_error', { error: e.message })); 
                     UIManager.updateConnectionStatus(false);
                 }
             },
@@ -394,17 +382,24 @@
                 let dataString = null;
 
                 if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                    results.multiHandLandmarks.forEach(landmarks => {
+                    // 모든 손의 뼈대와 랜드마크를 먼저 그림
+                    for (const landmarks of results.multiHandLandmarks) {
                         drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#FFFFFF', lineWidth: 2});
                         drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', radius: 2});
-                    });
+                    }
                     
+                    // 현재 활성화된 탭에 따른 기능 처리
                     switch (AppState.activeTabId) {
                         case 'hand-coords': 
                             dataString = HandAnalyzer.processIndexCoords(results.multiHandLandmarks[0], canvas.width, canvas.height); 
                             break;
                         case 'thumb-dist': 
                             dataString = HandAnalyzer.processThumbDist(results.multiHandLandmarks[0], canvas.width, canvas.height); 
+                            
+                            // ▼▼▼ [수정됨] MediaPipe의 내장 함수를 사용하여 선 그리기 ▼▼▼
+                            // 이렇게 하면 좌표계 변환을 직접 할 필요 없이 정확한 위치에 그려짐
+                            drawConnectors(canvasCtx, results.multiHandLandmarks[0], [[4, 8]], { color: '#00FF00', lineWidth: 4 });
+                            // ▲▲▲ [수정됨] MediaPipe의 내장 함수를 사용하여 선 그리기 ▲▲▲
                             break;
                         case 'finger-count': 
                             dataString = HandAnalyzer.processFingerCount(results.multiHandLandmarks, results.multiHandedness); 
@@ -440,10 +435,11 @@
                     const maxHands = (tabId === 'dual-coords' || tabId === 'finger-count') ? 2 : 1; 
                     AppState.hands.setOptions({maxNumHands: maxHands});
                 }
+                UIManager.resetAllDisplays();
             },
             async startRecognition() {
                 if (AppState.isRunning) return;
-                UIManager.updateStartButton('모델 로딩 중...', true);
+                UIManager.updateStartButton('loading_model', true);
                 
                 AppState.hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
                 AppState.hands.setOptions({
@@ -461,7 +457,8 @@
                 await AppState.camera.start();
                 
                 AppState.isRunning = true;
-                UIManager.updateStartButton('인식 중', false);
+                UIManager.updateStartButton('recognizing', false);
+                document.getElementById('start-button-container').style.display = 'none';
                 this.switchTab(AppState.activeTabId);
             },
             init() {
@@ -475,7 +472,10 @@
             }
         };
 
-        document.addEventListener('DOMContentLoaded', () => HandRecognitionApp.init());
+        document.addEventListener('DOMContentLoaded', () => {
+            setLanguage(); 
+            HandRecognitionApp.init();
+        });
     </script>
 </body>
 </html>
