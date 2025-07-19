@@ -100,7 +100,7 @@ const translations = {
         "guide_face_5": "MCU에서 수신한 데이터를 활용하여 다양한 출력장치를 제어하세요.",
         "developer_info_face": "WebSerial과 WebBLE를 이용해 페이스매시 결과를 유/무선으로 MCU에 전송하는 로컬 웹앱입니다.",
         "loading_model": "모델 로딩 중...",
-        "recognizing": "인식 중...",
+        "recognizing": "인식 중",
         "serial_connect_error": "시리얼 연결 실패: {error}",
         "ble_connect_error": "블루투스 연결 실패: {error}",
 
