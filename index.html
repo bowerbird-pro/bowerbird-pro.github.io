@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOWERBIRD PRO - Real-Time Data Logger & Plotter</title>
+    <link rel="icon" href="images/bowerbirdpro.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="BOWERBIRD PRO는 아두이노, 마이크로비트 등 다양한 MCU의 센서 데이터를 웹에서 실시간으로 로깅하고 시각화하는 데이터 로거입니다. 시리얼, 블루투스(BLE) 연결을 지원하며 설치 없이 사용 가능합니다.">
+    <meta name="keywords" content="데이터 로거, 실시간 데이터, 센서 데이터, 아두이노, 마이크로비트, ESP32, 데이터 시각화, Web Serial, Web Bluetooth, 데이터 과학, 디지털 과학실험">
+    <meta name="author" content="kim seok jeon">
+    <meta property="og:title" content="BOWERBIRD PRO - 실시간 데이터 로거 & 플로터">
+    <meta property="og:description" content="웹 브라우저에서 실시간 센서 데이터를 로깅하고 시각화하는 가장 쉬운 방법. 아두이노, 마이크로비트 등을 지원합니다.">
+    <meta property="og:image" content="images/bowerbirdpro_og_image.png">
+    <meta property="og:url" content="https://[https://ai4mcu.github.io/boewrbirdpro/]">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="BOWERBIRD PRO - 실시간 데이터 로거 & 플로터">
+    <meta name="twitter:description" content="웹 브라우저에서 실시간 센서 데이터를 로깅하고 시각화하는 가장 쉬운 방법. 아두이노, 마이크로비트 등을 지원합니다.">
+    <meta name="twitter:image" content="images/bowerbirdpro_og_image.png">
+</head>
+<body id="page-index">
+    <header>
+    <nav class="container">
+        <a href="#" class="logo">
+            <img src="images/bowerbirdpro_logo.png" alt="BOWERBIRD PRO 로고" style="height: 35px; margin-right: 10px; vertical-align: middle;">
+            <span style="vertical-align: middle;">BOWERBIRD <span style="color: #f44336;">PRO</span></span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="#features">기능</a></li>
+            <li><a href="#tech">기술</a></li>
+            <li><a href="#demo">데모</a></li>
+            <li><a href="#contact">연락처</a></li>
+        </ul>
+    </nav>
+</header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>BOWERBIRD <span style="color: #f44336;">PRO</span></h1>
+                <h1>Real-Time Data Logger & Plotter</h1>
+                <p class="subtitle">웹 브라우저에서 실시간 센서 데이터 로깅 및 시각화</p>
+                <p class="hero-description">
+                    Arduino, Micro:bit, ESP32 등 다양한 MCU의 센서 데이터를
+                    웹 브라우저에서 실시간으로 수집하고 차트로 시각화합니다. 수집한 데이터는 CSV파일로 저장하세요. 유선 시리얼, 무선 블루투스 통신으로 데이터를 수집할 수 있습니다. 설치 없이 Chrome 브라우저만으로 강력한 데이터 로깅이 가능합니다. 데이터과학, 일상데이터수집, 디지털과학실험에 실제 데이터를 이용해 유용하게 사용할 수 있습니다.
+                </p>
+                <div class="cta-buttons">
+                    <a href="boewrbirdpro.html" class="btn btn-primary" id="launchApp" target="_blank">
+                        🚀 웹앱 실행하기
+                    </a>
+                    <a href="information.html" class="btn btn-secondary" target="_blank">
+                        📖 안내서 보기
+                    </a>
+                    <a href="#demo" class="btn btn-secondary">
+                        📹 데모 보기
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="container">
+                <h2 class="scroll-animate">주요 기능</h2>
+                <div class="features-grid">
+                    <div class="feature-card scroll-animate">
+                        <span class="feature-icon">🔌</span>
+                        <h3>다양한 연결 방식</h3>
+                        <p>Web Serial API를 통한 USB 시리얼 연결과 Web Bluetooth API를 통한 BLE 연결을 모두 지원합니다.</p>
+                    </div>
+                    <div class="feature-card scroll-animate">
+                        <span class="feature-icon">📊</span>
+                        <h3>실시간 차트</h3>
+                        <p>최대 10개 센서의 데이터를 실시간으로 차트에 표시하고, 시간축 기반으로 트렌드를 확인할 수 있습니다.</p>
+                    </div>
+                    <div class="feature-card scroll-animate">
+                        <span class="feature-icon">💾</span>
+                        <h3>CSV 데이터 로깅</h3>
+                        <p>수집된 모든 데이터를 CSV 파일로 자동 저장하여 추후 분석이나 리포트 작성에 활용할 수 있습니다.</p>
+                    </div>
+                    <div class="feature-card scroll-animate">
+                        <span class="feature-icon">🌐</span>
+                        <h3>다국어 지원</h3>
+                        <p>한국어, 영어, 중국어, 일본어 등 16개 언어를 지원하여 전 세계 사용자가 편리하게 이용할 수 있습니다.</p>
+                    </div>
+                    <div class="feature-card scroll-animate">
+                        <span class="feature-icon">⚡</span>
+                        <h3>설치 불필요</h3>
+                        <p>별도 소프트웨어 설치 없이 Chrome 브라우저만으로 모든 기능을 사용할 수 있어 매우 편리합니다.</p>
+                    </div>
+                    <div class="feature-card scroll-animate">
+                        <span class="feature-icon">🎛️</span>
+                        <h3>직관적 인터페이스</h3>
+                        <p>간단한 설정으로 빠르게 데이터 수집을 시작할 수 있는 사용자 친화적인 인터페이스를 제공합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tech" class="tech-stack">
+            <div class="container">
+                <h2 class="scroll-animate">기술 스택</h2>
+                <div class="tech-grid">
+                    <div class="tech-item scroll-animate">
+                        <h3>🌐 Web Serial, Web BLE</h3>
+                        <p>웹시리얼과 웹BLE를 통한 유연하고, 안정적인 통신</p>
+                    </div>
+                    <div class="tech-item scroll-animate">
+                        <h3>📡 MCU와 연동</h3>
+                        <p>다양한 MCU와 연결하여 데이터 수집, 각 MCU별 블록코딩, 텍스트코딩으로 제어</p>
+                    </div>
+                    <div class="tech-item scroll-animate">
+                        <h3>📊 Chart.js</h3>
+                        <p>고성능 실시간 차트 렌더링 및 애니메이션</p>
+                    </div>
+                    <div class="tech-item scroll-animate">
+                        <h3>⚙️ Modern JavaScript</h3>
+                        <p>ES6+ 문법과 Web Workers를 활용한 효율적인 데이터 처리</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="demo" class="demo">
+            <div class="container">
+                <h2 class="scroll-animate">데모 영상</h2>
+                <div class="demo-video scroll-animate">
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/OI6vh4JQ2bM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                <div style="margin-top: 2rem;">
+                    <a href="boewrbirdpro.html" class="btn btn-primary" id="launchAppBottom" target="_blank">
+                        🚀 지금 사용해보기
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>연락처</h3>
+                    <p>개발자: kim seok jeon</p>
+                    <p>이메일: <a href="mailto:alphaco@kakao.com">alphaco@kakao.com</a></p>
+                    <p>이메일: <a href="mailto:doolbat@naver.com">doolbat@naver.com</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>관련 사이트</h3>
+                    <p><a href="https://gorillacell.kr" target="_blank">http://gorillacell.kr</a></p>
+                    <p><a href="https://brixel.kr" target="_blank">http://brixel.kr</a></p>
+                </div>
+                <div class="footer-section">
+                    <h3>학습 자료</h3>
+                    <p><a href="https://youtube.com/playlist?list=PLvqoyPjBsPKmNYNbOP_ZBgGOvx5S92GtH" target="_blank">YouTube 튜토리얼</a></p>
+                    <p><a href="https://makecode.microbit.org/S01650-49573-77266-81374" target="_blank">Micro:bit 예제 코드</a></p>
+                </div>
+            </div>
+            <div style="border-top: 1px solid #34495e; padding-top: 2rem; margin-top: 2rem;">
+                <p>© 2025 BOWERBIRD <span style="color: #f44336;">PRO</span> - Real-Time Data Logger & Plotter. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.scroll-animate').forEach(el => {
+            observer.observe(el);
+        });
+
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(44, 62, 80, 0.95)';
+            } else {
+                header.style.background = 'rgba(255, 255, 255, 0.1)';
+            }
+        });
+
+        function createParticle() {
+            const particle = document.createElement('div');
+            particle.style.cssText = `
+                position: fixed;
+                width: 4px;
+                height: 4px;
+                background: rgba(255, 255, 255, 0.5);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: -1;
+                animation: float 6s linear infinite;
+            `;
+
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.animationDelay = Math.random() * 6 + 's';
+
+            document.body.appendChild(particle);
+
+            setTimeout(() => {
+                particle.remove();
+            }, 6000);
+        }
+
+        setInterval(createParticle, 300);
+    </script>
+</body>
+</html>

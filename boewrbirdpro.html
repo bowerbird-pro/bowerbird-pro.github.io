@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOWERBIRD PRO</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
+    <link rel="icon" href="images/bowerbirdpro.ico" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body id="page-app">
+    <div class="container">
+        <div class="header">
+             <div class="header-content">
+                <a href="index.html" class="logo">
+                    <img src="./images/bowerbirdpro_logo.png" alt="Bowerbird Pro 로고">
+                    <div>
+                        <div style="font-weight: 900;">BOWERBIRD <span style="color: #f44336;">PRO</span></div>
+                        <div data-translate="appSubtitle" style="font-size: 0.7rem; opacity: 0.7;">Real-Time Data Logger & Plotter</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="main-layout">
+            <div class="left-panel">
+                <div class="section">
+                    <h3 data-translate="connectionSettings">연결 설정</h3>
+                    
+                    <div class="form-group">
+                        <label for="languageSelector" data-translate="language">언어</label>
+                        <select id="languageSelector"></select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="deviceType" data-translate="deviceType">*통신 유형</label>
+                        <select id="deviceType">
+                            <option value="serial" data-translate="serialPort">시리얼 통신</option>
+                            <option value="bluetooth" data-translate="bluetoothLE">블루투스 통신</option>
+                        </select>
+                    </div>
+                    <div id="serialSettings">
+                         <div class="form-group">
+                            <label for="baudRate" data-translate="baudRateLabel">보드레이트</label>
+                            <select id="baudRate">
+                                <option value="9600" selected>9600</option>
+                                <option value="115200">115200</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="bleSettings" style="display: none;">
+                        <div class="form-group">
+                            <label for="bleDeviceType" data-translate="bleDevice">BLE 장치</label>
+                            <select id="bleDeviceType">
+                                <option value="microbit" data-translate="microbit">마이크로비트</option>
+                                <option value="generic" data-translate="genericUart">ESP32, PICO-W</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button id="connectBtn" class="btn btn-connect" data-translate="connectSerial">시리얼 연결</button>
+                </div>
+
+                <div class="section">
+                    <h3 data-translate="sensorSettings">센서 설정</h3>
+                    <div class="form-group">
+                        <label for="sensorCount" data-translate="sensorCount">센서 개수</label>
+                        <input type="number" id="sensorCount" value="1" min="1" max="10">
+                    </div>
+                    <div class="sensor-section-header">
+                         <label data-translate="sensorNameSettings">센서 이름 설정</label>
+                         <div id="sensorInputs" class="sensor-inputs-container">
+                            </div>
+                    </div>
+                </div>
+
+                <div class="section-no-border">
+                    <div class="button-group">
+                        <button id="startLogging" class="btn btn-start" data-translate="start">시작</button>
+                        <button id="pauseLogging" class="btn btn-pause" disabled data-translate="pause">일시정지</button>
+                        <button id="stopLogging" class="btn btn-stop" disabled data-translate="stop">정지</button>
+                    </div>
+                    <a href="information.html" target="_blank" class="btn btn-info" data-translate="info">정보</a>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                 <div class="logs-container">
+                    <div class="log-section">
+                        <h4 data-translate="consoleLog">콘솔 로그</h4>
+                        <div id="consoleLog" class="log-content"></div>
+                    </div>
+                    <div class="log-section">
+                        <h4 data-translate="receivedDataLog">수신 데이터 로그</h4>
+                        <div id="dataLog" class="log-content"></div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="dataChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// --- 전역 변수 ---
+let chart, serialPort, serialReader;
+let bleDevice, bleCharacteristic;
+let isLogging = false, isPaused = false, keepReading = false;
+let csvData = [], sensorNames = [];
+let chartStartTime = null;
+let chartMode = 'EXPANDING';
+let animationFrameId = null;
+let wakeLockSentinel = null;
+let currentTranslations = {};
+let currentLang = 'ko';
+
+// --- 상수 ---
+const MAX_VIEW_SECONDS = 60;
+const BLE_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const BLE_CHAR_UUID_RECEIVE = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+const sensorColors = ['#E6194B', '#4363d8', '#FFD700', '#3cb44b', '#911eb4', '#f58231', '#46f0f0', '#f032e6', '#000075', '#bfef45'];
+const languages = {
+    // 기본 및 아시아 주요 언어
+    "ko": "한국어",
+    "en": "English",
+    "ja": "日本語",       // 일본어
+    "zh-CN": "简体中文",   // 중국어(간체)
+    "zh-TW": "繁體中文",   // 중국어(정체)
+
+    // 유럽
+    "de": "Deutsch",     // 독일어
+    "es": "Español",     // 스페인어
+    "fr": "Français",    // 프랑스어
+    "it": "Italiano",    // 이탈리아어
+    "pt": "Português",   // 포르투갈어
+    "ru": "Русский",     // 러시아어
+    "nl": "Nederlands",  // 네덜란드어
+
+    // 중동
+    "ar": "العربية",      // 아랍어
+    "tr": "Türkçe",      // 터키어
+    "fa": "فارسی",        // 페르시아어(이란어)
+
+    // 중앙아시아
+    "uz": "Oʻzbekcha",   // 우즈베크어
+
+    // 동남아시아
+    "id": "Bahasa Indonesia", // 인도네시아어
+    "ms": "Bahasa Melayu",    // 말레이어
+    "th": "ไทย",            // 태국어
+    "vi": "Tiếng Việt",       // 베트남어
+    "tl": "Filipino"          // 필리핀어
+};
+
+// --- UI 요소 객체 ---
+const ui = {
+    connectBtn: document.getElementById('connectBtn'),
+    startBtn: document.getElementById('startLogging'),
+    pauseBtn: document.getElementById('pauseLogging'),
+    stopBtn: document.getElementById('stopLogging'),
+    sensorCountInput: document.getElementById('sensorCount'),
+    sensorInputsContainer: document.getElementById('sensorInputs'),
+    deviceTypeSelect: document.getElementById('deviceType'),
+    serialSettingsDiv: document.getElementById('serialSettings'),
+    bleSettingsDiv: document.getElementById('bleSettings'),
+    bleDeviceTypeSelect: document.getElementById('bleDeviceType'),
+    languageSelector: document.getElementById('languageSelector')
+};
+
+// --- 애플리케이션 초기화 ---
+document.addEventListener('DOMContentLoaded', () => {
+    initializeChart();
+    populateLanguageSelector();
+    const savedLang = localStorage.getItem('selectedLanguage');
+    if (savedLang) {
+        loadLanguage(savedLang);
+    } else {
+        const browserLang = navigator.language.split('-')[0];
+        loadLanguage(languages[browserLang] ? browserLang : 'ko');
+    }
+    setupEventListeners();
+    updateSensorInputs();
+    logMessage('logAppInit');
+});
+
+// --- 언어 및 번역 기능 ---
+function populateLanguageSelector() {
+    for (const [code, name] of Object.entries(languages)) {
+        const option = document.createElement('option');
+        option.value = code;
+        option.textContent = name;
+        ui.languageSelector.appendChild(option);
+    }
+}
+
+async function loadLanguage(langCode) {
+    try {
+        const response = await fetch(`translations/${langCode}.json`);
+        if (!response.ok) throw new Error(`Status: ${response.status}`);
+        const translations = await response.json();
+        currentTranslations = translations;
+        currentLang = langCode;
+        applyTranslations(translations);
+        ui.languageSelector.value = langCode;
+        localStorage.setItem('selectedLanguage', langCode);
+    } catch (error) {
+        console.error(error);
+        logMessage('logLangLoadError', { langCode });
+    }
+}
+
+function applyTranslations(translations) {
+    document.querySelectorAll('[data-translate]').forEach(element => {
+        const key = element.getAttribute('data-translate');
+        if (translations[key]) element.textContent = translations[key];
+    });
+    if (translations.pageTitleApp) document.title = translations.pageTitleApp;
+    if (chart && translations.chartTimeAxis && translations.chartValueAxis) {
+        chart.options.scales.x.title.text = translations.chartTimeAxis;
+        chart.options.scales.y.title.text = translations.chartValueAxis;
+        chart.update('none');
+    }
+    updateConnectionUI();
+    updateSensorInputs();
+}
+
+// --- 차트 및 UI 초기화 ---
+function initializeChart() {
+    if (typeof Chart === 'undefined') return logMessage('logChartJsError');
+    const ctx = document.getElementById('dataChart').getContext('2d');
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: { datasets: [] },
+        options: {
+            responsive: true, maintainAspectRatio: false, animation: false,
+            interaction: { intersect: false, mode: 'index' },
+            plugins: {
+                zoom: { zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }, pan: { enabled: true, mode: 'x' } },
+                legend: { display: true, position: 'top', align: 'end' }
+            },
+            scales: {
+                x: { type: 'linear', title: { display: true, text: '시간', color: '#555' }, ticks: { color: '#555', maxTicksLimit: 10 } },
+                y: { title: { display: true, text: '값', color: '#555' }, ticks: { color: '#555' } }
+            }
+        }
+    });
+    // ▼▼▼ 수정된 부분 ▼▼▼
+    logMessage('logChartInit'); 
+}
+
+function setupEventListeners() {
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    ui.languageSelector.addEventListener('change', (e) => loadLanguage(e.target.value));
+    ui.connectBtn.addEventListener('click', toggleConnection);
+    ui.deviceTypeSelect.addEventListener('change', updateConnectionUI);
+    ui.sensorCountInput.addEventListener('input', updateSensorInputs);
+    ui.startBtn.addEventListener('click', startLogging);
+    ui.pauseBtn.addEventListener('click', togglePause);
+    ui.stopBtn.addEventListener('click', stopLogging);
+}
+
+// --- UI 관리 ---
+function updateConnectionUI() {
+    const deviceType = ui.deviceTypeSelect.value;
+    const isConnected = serialPort || (bleDevice && bleDevice.gatt.connected);
+    if (isConnected) return;
+    if (deviceType === 'serial') {
+        ui.serialSettingsDiv.style.display = 'block';
+        ui.bleSettingsDiv.style.display = 'none';
+        ui.connectBtn.setAttribute('data-translate', 'connectSerial');
+    } else {
+        ui.serialSettingsDiv.style.display = 'none';
+        ui.bleSettingsDiv.style.display = 'block';
+        ui.connectBtn.setAttribute('data-translate', 'connectBLE');
+    }
+    const key = ui.connectBtn.getAttribute('data-translate');
+    if (currentTranslations[key]) ui.connectBtn.textContent = currentTranslations[key];
+}
+
+// --- 데이터 처리 및 차트 렌더링 ---
+function processDataLine(line) {
+    const currentTime = new Date();
+    const timeWithMs = currentTime.toLocaleTimeString(currentLang, { hour12: false }) + '.' + currentTime.getMilliseconds().toString().padStart(3, '0');
+    logDataMessage(`[${timeWithMs}] ${line}`);
+
+    if (!isLogging || isPaused) return;
+
+    let dataPart = line.trim().toUpperCase().startsWith('DATA,') ? line.trim().substring(5) : line.trim();
+
+    if (!chartStartTime) chartStartTime = currentTime;
+    const elapsedSeconds = (currentTime - chartStartTime) / 1000;
+
+    try {
+        const values = dataPart.split(',').map(v => parseFloat(v.trim()));
+        if (values.some(isNaN)) return logMessage('logDataWarning', { line });
+        values.forEach((value, i) => {
+            if (chart.data.datasets[i]) chart.data.datasets[i].data.push({ x: elapsedSeconds, y: value });
+        });
+        csvData.push([currentTime.toLocaleDateString(currentLang), timeWithMs, ...values]);
+    } catch (error) {
+        logMessage('logDataError', { line, error: error.message });
+    }
+}
+
+function renderChart() {
+    if (!isLogging || isPaused || !chart.data.datasets.length || !chart.data.datasets[0] || chart.data.datasets[0].data.length < 2) {
+        animationFrameId = requestAnimationFrame(renderChart);
+        return;
+    }
+    const firstPoint = chart.data.datasets[0].data[0];
+    const lastPoint = chart.data.datasets[0].data[chart.data.datasets[0].data.length - 1];
+    const totalDuration = lastPoint.x - firstPoint.x;
+
+    if (chartMode === 'EXPANDING' && totalDuration > MAX_VIEW_SECONDS) chartMode = 'SHIFTING';
+
+    if (chartMode === 'EXPANDING') {
+        chart.options.scales.x.min = firstPoint.x;
+        chart.options.scales.x.max = lastPoint.x;
+    } else {
+        const visibleMax = lastPoint.x;
+        const visibleMin = visibleMax - MAX_VIEW_SECONDS;
+        chart.options.scales.x.min = visibleMin;
+        chart.options.scales.x.max = visibleMax;
+        chart.data.datasets.forEach(dataset => {
+            while (dataset.data.length > 2 && dataset.data[1].x < visibleMin) dataset.data.shift();
+        });
+    }
+    updateXAxisTicks(chart.options.scales.x.max - chart.options.scales.x.min);
+    chart.update('none');
+    animationFrameId = requestAnimationFrame(renderChart);
+}
+
+function updateXAxisTicks(viewDuration) {
+    chart.options.scales.x.ticks.callback = function(value) {
+        if (!chartStartTime) return value;
+        const date = new Date(chartStartTime.getTime() + value * 1000);
+        if (viewDuration <= 10) return date.toLocaleTimeString(currentLang, { minute: '2-digit', second: '2-digit' }) + '.' + date.getMilliseconds().toString().padStart(3, '0').substring(0, 1);
+        if (viewDuration <= 120) return date.toLocaleTimeString(currentLang, { minute: '2-digit', second: '2-digit' });
+        return date.toLocaleTimeString(currentLang, { hour12: false });
+    };
+}
+
+// --- 로깅 제어 ---
+function startLogging() {
+    if (!serialPort && !bleDevice) return alert(currentTranslations.alertConnectFirst || 'Please connect to a device first.');
+    isLogging = true; isPaused = false; chartMode = 'EXPANDING'; chartStartTime = null;
+    csvData = [[currentTranslations.csvDate || 'Date', currentTranslations.csvTime || 'Time', ...sensorNames]];
+    
+    if (chart && chart.data.datasets) chart.data.datasets.forEach(dataset => dataset.data = []);
+    
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    animationFrameId = requestAnimationFrame(renderChart);
+
+    ui.startBtn.disabled = true;
+    ui.pauseBtn.disabled = false;
+    ui.pauseBtn.textContent = currentTranslations.pause || 'Pause';
+    ui.stopBtn.disabled = false;
+    logMessage('logStart');
+}
+
+function togglePause() {
+    isPaused = !isPaused;
+    ui.pauseBtn.textContent = isPaused ? (currentTranslations.resume || 'Resume') : (currentTranslations.pause || 'Pause');
+    logMessage(isPaused ? 'logPause' : 'logResume');
+}
+
+function stopLogging() {
+    isLogging = false;
+    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+    ui.startBtn.disabled = false;
+    ui.pauseBtn.disabled = true;
+    ui.pauseBtn.textContent = currentTranslations.pause || 'Pause';
+    ui.stopBtn.disabled = true;
+    logMessage('logStop');
+    if (csvData.length > 1) downloadCSV();
+}
+
+// --- 센서 설정 ---
+function updateSensorInputs() {
+    const count = parseInt(ui.sensorCountInput.value, 10) || 0;
+    ui.sensorInputsContainer.innerHTML = '';
+    
+    const newSensorNames = [];
+    const sensorLabel = currentTranslations.sensorDefaultName || 'Sensor';
+
+    for (let i = 0; i < count; i++) {
+        const defaultName = sensorNames[i] || `${sensorLabel} ${i + 1}`;
+        newSensorNames.push(defaultName);
+        
+        const inputGroup = document.createElement('div');
+        inputGroup.className = 'sensor-input-group';
+        inputGroup.innerHTML = `<label>${sensorLabel} ${i + 1}:</label><input type="text" value="${defaultName}">`;
+        
+        inputGroup.querySelector('input').addEventListener('input', (e) => {
+            sensorNames[i] = e.target.value.trim() || `${sensorLabel} ${i + 1}`;
+            updateChartDatasets();
+        });
+        ui.sensorInputsContainer.appendChild(inputGroup);
+    }
+    sensorNames = newSensorNames;
+    updateChartDatasets();
+}
+
+function updateChartDatasets() {
+    if (!chart) return;
+    sensorNames.forEach((name, i) => {
+        if (chart.data.datasets[i]) {
+            chart.data.datasets[i].label = name;
+        } else {
+            chart.data.datasets[i] = {
+                label: name, data: [], borderColor: sensorColors[i % sensorColors.length],
+                tension: 0.1, pointRadius: 1, borderWidth: 1,
+            };
+        }
+    });
+    if (chart.data.datasets.length > sensorNames.length) {
+        chart.data.datasets.splice(sensorNames.length);
+    }
+    chart.update();
+}
+
+// --- 연결 관리 (시리얼, BLE) ---
+async function toggleConnection() {
+    if (serialPort || (bleDevice && bleDevice.gatt.connected)) {
+        if (serialPort) await disconnectSerial();
+        if (bleDevice) await disconnectBLE();
+    } else {
+        ui.deviceTypeSelect.value === 'serial' ? await connectSerial() : await connectBLE();
+    }
+}
+
+async function connectSerial() {
+    if (!('serial' in navigator)) return alert(currentTranslations.alertNoWebSerial || 'Web Serial API is not supported.');
+    try {
+        logMessage('logSerialConnecting');
+        serialPort = await navigator.serial.requestPort();
+        await serialPort.open({ baudRate: parseInt(document.getElementById('baudRate').value, 10) });
+        // ▼▼▼ 수정된 부분 ▼▼▼
+        logMessage('logSerialConnected');
+        ui.connectBtn.textContent = currentTranslations.disconnect || 'Disconnect';
+        ui.connectBtn.className = 'btn btn-disconnect';
+        await requestWakeLock();
+        keepReading = true;
+        readFromSerial();
+    } catch (error) {
+        if (error.name !== 'NotFoundError') logMessage('logConnectionFailed', { error: error.message });
+    }
+}
+
+async function disconnectSerial() {
+    if (wakeLockSentinel) await wakeLockSentinel.release();
+    wakeLockSentinel = null;
+    keepReading = false;
+    if (isLogging) stopLogging();
+    if (serialReader) {
+        try { await serialReader.cancel(); } catch(e){}
+        serialReader.releaseLock();
+        serialReader = null;
+    }
+    if (serialPort) {
+        try { await serialPort.close(); } catch(e){}
+        serialPort = null;
+    }
+    ui.connectBtn.className = 'btn btn-connect';
+    updateConnectionUI();
+    // ▼▼▼ 수정된 부분 ▼▼▼
+    logMessage('logSerialDisconnected');
+}
+
+async function readFromSerial() {
+    if (!serialPort || !serialPort.readable) return;
+    const decoder = new TextDecoder('utf-8');
+    let partialLine = '';
+    serialReader = serialPort.readable.getReader();
+    try {
+        while (keepReading) {
+            const { value, done } = await serialReader.read();
+            if (done) break;
+            partialLine += decoder.decode(value, { stream: true });
+            const lines = partialLine.split('\n');
+            partialLine = lines.pop() || '';
+            lines.forEach(line => {
+                if (line.trim()) processDataLine(line.trim());
+            });
+        }
+    } catch (error) {
+        logMessage('logReadError', { error: error.message });
+    } finally {
+        if (serialReader) serialReader.releaseLock();
+    }
+}
+
+async function connectBLE() {
+    if (!('bluetooth' in navigator)) return alert(currentTranslations.alertNoWebBluetooth || 'Web Bluetooth API is not supported.');
+    const devType = ui.bleDeviceTypeSelect.value;
+    const opts = devType === 'microbit' ? { filters: [{ namePrefix: "BBC micro:bit" }], optionalServices: [BLE_SERVICE_UUID] } : { filters: [{ services: [BLE_SERVICE_UUID] }] };
+    try {
+        logMessage('logBleScanning');
+        bleDevice = await navigator.bluetooth.requestDevice(opts);
+        logMessage('logBleDeviceSelected', { name: bleDevice.name || bleDevice.id });
+        bleDevice.addEventListener('gattserverdisconnected', onBLEDisconnected);
+        const server = await bleDevice.gatt.connect();
+        ui.connectBtn.textContent = currentTranslations.disconnect || 'Disconnect';
+        ui.connectBtn.className = 'btn btn-disconnect';
+        await requestWakeLock();
+        const service = await server.getPrimaryService(BLE_SERVICE_UUID);
+        bleCharacteristic = await service.getCharacteristic(BLE_CHAR_UUID_RECEIVE);
+        await bleCharacteristic.startNotifications();
+        bleCharacteristic.addEventListener('characteristicvaluechanged', handleBleNotification);
+        logMessage('logBleConnected');
+    } catch (error) {
+        logMessage('logBleFailed', { error: error.message });
+        if (bleDevice && bleDevice.gatt.connected) bleDevice.gatt.disconnect();
+        else onBLEDisconnected();
+    }
+}
+
+async function disconnectBLE() {
+    logMessage('logBleDisconnecting');
+    if (bleDevice && bleDevice.gatt.connected) bleDevice.gatt.disconnect();
+    else logMessage('logBleAlreadyDisconnected');
+}
+
+function onBLEDisconnected() {
+    if (wakeLockSentinel) { wakeLockSentinel.release(); wakeLockSentinel = null; }
+    logMessage('logBleDisconnected');
+    if (isLogging) stopLogging();
+    if (bleCharacteristic) bleCharacteristic.removeEventListener('characteristicvaluechanged', handleBleNotification);
+    bleCharacteristic = null;
+    bleDevice = null;
+    ui.connectBtn.className = 'btn btn-connect';
+    updateConnectionUI();
+}
+
+let blePartialLine = '';
+const bleDecoder = new TextDecoder('utf-8');
+
+function handleBleNotification(event) {
+    const value = event.target.value;
+    blePartialLine += bleDecoder.decode(value, { stream: true });
+    const lines = blePartialLine.split('\n');
+    blePartialLine = lines.pop() || '';
+    lines.forEach(line => {
+        if (line.trim()) processDataLine(line.trim());
+    });
+}
+
+// --- 유틸리티 함수 ---
+const requestWakeLock = async () => {
+    if ('wakeLock' in navigator) {
+        try {
+            wakeLockSentinel = await navigator.wakeLock.request('screen');
+            wakeLockSentinel.addEventListener('release', () => logMessage('logWakeLockReleased'));
+            logMessage('logWakeLockAcquired');
+        } catch (err) {
+            logMessage('logWakeLockFailed', { name: err.name, message: err.message });
+        }
+    } else {
+        logMessage('alertNoWakeLock');
+    }
+};
+
+const handleVisibilityChange = async () => {
+    if (wakeLockSentinel !== null && document.visibilityState === 'visible') {
+        logMessage('logWakeLockReacquired');
+        await requestWakeLock();
+    }
+};
+
+function downloadCSV() {
+    const csvContent = csvData.map(row => row.join(',')).join('\n');
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10);
+    const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '');
+    const filename = `Bowerbird_PRO_datalog_${dateStr}_${timeStr}.csv`;
+    link.download = filename;
+    link.click();
+    logMessage('logCsvDownloaded', { filename });
+}
+
+function logMessage(key, params = {}) {
+    const log = document.getElementById('consoleLog');
+    const timestamp = new Date().toLocaleTimeString(currentLang, { hour12: false });
+    
+    let message = currentTranslations[key] || key;
+    for (const [param, value] of Object.entries(params)) {
+        message = message.replace(`{${param}}`, value);
+    }
+    
+    log.textContent += `[${timestamp}] ${message}\n`;
+    log.scrollTop = log.scrollHeight;
+    if (log.textContent.split('\n').length > 300) log.textContent = log.textContent.split('\n').slice(-200).join('\n');
+}
+
+function logDataMessage(message) {
+    const log = document.getElementById('dataLog');
+    log.textContent += message + '\n';
+    log.scrollTop = log.scrollHeight;
+    if (log.textContent.split('\n').length > 500) log.textContent = log.textContent.split('\n').slice(-400).join('\n');
+}
+</script>
+</body>
+</html>
+</body>
+</html>
