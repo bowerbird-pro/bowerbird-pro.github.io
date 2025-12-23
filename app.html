@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOWERBIRD PRO</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
+    <link rel="icon" href="assets/images/bowerbirdpro.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body id="page-app">
+    <div class="container">
+        <div class="main-layout">
+            <div class="left-panel">
+                <div class="left-card logo-card">
+                    <a href="index.html" class="logo">
+                        <img src="assets/images/bowerbirdpro_logo.png" alt="Bowerbird Pro 로고">
+                        <div>
+                            <div class="logo-title">BOWERBIRD <span style="color: #f44336;">PRO</span></div>
+                            <div class="logo-subtitle" data-translate="appSubtitle">Real-Time Data Logger & Plotter
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="left-card settings-card">
+                    <div class="section">
+                        <h3 data-translate="connectionSettings">연결 설정</h3>
+
+                        <div class="form-group">
+                            <label for="languageSelector" data-translate="language">언어</label>
+                            <select id="languageSelector"></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deviceType" data-translate="deviceType">*통신 유형</label>
+                            <select id="deviceType">
+                                <option value="serial" data-translate="serialPort">시리얼 통신</option>
+                                <option value="bluetooth" data-translate="bluetoothLE">블루투스 통신</option>
+                            </select>
+                        </div>
+                        <div id="serialSettings">
+                            <div class="form-group">
+                                <label for="baudRate" data-translate="baudRateLabel">보드레이트</label>
+                                <select id="baudRate">
+                                    <option value="9600" selected>9600</option>
+                                    <option value="115200">115200</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="bleSettings" style="display: none;">
+                            <div class="form-group">
+                                <label for="bleDeviceType" data-translate="bleDevice">BLE 장치</label>
+                                <select id="bleDeviceType">
+                                    <option value="microbit" data-translate="microbit">마이크로비트</option>
+                                    <option value="generic" data-translate="genericUart">ESP32, PICO-W</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button id="connectBtn" class="btn btn-connect" data-translate="connectSerial">시리얼 연결</button>
+                    </div>
+
+                    <div class="section">
+                        <h3 data-translate="sensorSettings">센서 설정</h3>
+                        <div class="form-group">
+                            <label for="sensorCount" data-translate="sensorCount">센서 개수</label>
+                            <input type="number" id="sensorCount" value="1" min="1" max="10">
+                        </div>
+                        <div class="sensor-section-header">
+                            <label data-translate="sensorNameSettings">센서 이름 설정</label>
+                            <div id="sensorInputs" class="sensor-inputs-container">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="button-group">
+                            <button id="startLogging" class="btn btn-start" data-translate="start">시작</button>
+                            <button id="pauseLogging" class="btn btn-pause" disabled
+                                data-translate="pause">일시정지</button>
+                            <button id="stopLogging" class="btn btn-stop" disabled data-translate="stop">정지</button>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <a href="information.html" target="_blank" class="btn btn-info" data-translate="info"
+                                style="width: 100%; text-align: center; display: block;">정보</a>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3 data-translate="dataAnalysis">데이터 분석 도구</h3>
+                        <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px;">
+                            <button id="btnDerivative" class="btn-xs btn-outline" style="flex: 1; font-size: 0.75rem;"
+                                data-translate="calcDerivative">Derivative</button>
+                            <button id="btnIntegral" class="btn-xs btn-outline" style="flex: 1; font-size: 0.75rem;"
+                                data-translate="calcIntegral">Integral</button>
+                        </div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label
+                                style="font-size: 0.8rem; color: #555; display: flex; align-items: center; gap: 5px;">
+                                <input type="checkbox" id="smoothingToggle">
+                                <span data-translate="toolSmoothing">Smoothing</span>
+                            </label>
+                            <select id="smoothingType"
+                                style="padding: 2px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.75rem; flex: 1;"
+                                disabled>
+                                <option value="ma">Mov. Avg</option>
+                                <option value="sg">Sav-Golay</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="right-panel">
+                <div class="logs-container">
+                    <div class="log-section">
+                        <h4 data-translate="consoleLog">콘솔 로그</h4>
+                        <div id="consoleLog" class="log-content"></div>
+                    </div>
+                    <div class="log-section">
+                        <h4 data-translate="receivedDataLog">수신 데이터 로그</h4>
+                        <div id="dataLog" class="log-content"></div>
+                    </div>
+                    <div class="log-section analysis-section">
+                        <h4 data-translate="dataAnalysis">데이터 분석</h4>
+                        <!-- Persistent Controls -->
+                        <div class="analysis-controls"
+                            style="margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #eee; display: flex; flex-direction: column; gap: 8px;">
+                            <!-- Regression Selection -->
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <label style="font-size: 0.8rem; color: #555; white-space: nowrap;"
+                                    data-translate="analysisModel">Model:</label>
+                                <select id="regressionTypeSelect"
+                                    style="padding: 4px; border-radius: 4px; border: 1px solid #ccc; font-size: 0.8rem; flex: 1;">
+                                    <option value="linear" selected data-translate="regLinear">Linear</option>
+                                    <option value="polynomial" data-translate="regPolynomial">Polynomial (2nd)</option>
+                                    <option value="exponential" data-translate="regExponential">Exponential</option>
+                                    <option value="power" data-translate="regPower">Power</option>
+                                    <option value="logarithmic" data-translate="regLogarithmic">Logarithmic</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="analysisResult" class="log-content analysis-content">
+                            <div class="analysis-placeholder" data-translate="selectRangeHint">차트를 드래그하여 구간을 선택하세요.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-controls" style="margin-bottom: 5px; text-align: right;">
+                        <span data-translate="zoomControls"
+                            style="font-size: 0.8rem; margin-right: 5px; color: #666;">View:</span>
+                        <button class="btn-xs btn-outline" data-zoom="1">1s</button>
+                        <button class="btn-xs btn-outline" data-zoom="10">10s</button>
+                        <button class="btn-xs btn-outline" data-zoom="60">1m</button>
+                        <button class="btn-xs btn-outline" data-zoom="300">5m</button>
+                        <button class="btn-xs btn-outline" data-zoom="all">All</button>
+                        <button class="btn-xs btn-primary" data-zoom="auto" data-translate="autoScroll">Auto</button>
+                    </div>
+                    <canvas id="dataChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
