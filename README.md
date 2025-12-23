@@ -93,7 +93,7 @@ boewrbirdpro/
 
 ## 👨‍💻 개발자 정보 (Developer)
 
-*   **개발자**: 김석전 (Kim Seok Jeon / alphaco)
+*   **개발자**: 김석전 (Kim Seok Jeon / 송도중교사/인하대 겸임교수)
 *   **연락처**: alphaco@kakao.com / doolbat@naver.com
 *   **버전**: v2.0.0 (Advanced Analysis & Multilingual Edition)
 *   **라이선스**: K-12 공교육용 무료 사용 가능
