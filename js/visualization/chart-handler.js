@@ -2,10 +2,14 @@ import { logMessage } from '../utils/helpers.js';
 
 let chart;
 const MAX_VIEW_SECONDS = 60;
+const MAX_DATA_POINTS = 100000;
 let chartStartTime = null;
 let chartMode = 'EXPANDING';
 const sensorColors = ['#E6194B', '#4363d8', '#FFD700', '#3cb44b', '#911eb4', '#f58231', '#46f0f0', '#f032e6', '#000075', '#bfef45'];
 let currentLang = 'ko';
+// Full data store (kept separate from chart display for analysis)
+let fullDataStore = [];
+let mcuTimeOrigin = null;
 
 export function initializeChart(canvasId) {
     if (typeof Chart === 'undefined') {
@@ -282,9 +286,7 @@ export function getVisibleData() {
     const maxX = chart.scales.x.max;
 
     return chart.data.datasets.map(dataset => {
-        // Find data points within the range
-        // Note: dataset.data is sorted by x. Could simplify with binary search if needed, but linear filter is fine for moderate size.
-        const visiblePoints = dataset.data.filter(point => point.x >= minX && point.x <= maxX);
+        const visiblePoints = binaryRangeFilter(dataset.data, minX, maxX);
         return {
             label: dataset.label,
             data: visiblePoints,
@@ -293,12 +295,56 @@ export function getVisibleData() {
     });
 }
 
+/**
+ * Retrieves ALL data points for all datasets from full data store (ignores viewport and downsampling).
+ */
+export function getAllData() {
+    if (!chart) return [];
+
+    return chart.data.datasets.map((dataset, i) => ({
+        label: dataset.label,
+        data: (!dataset.isTrendline && !dataset.isProcessed && fullDataStore[i])
+            ? fullDataStore[i]
+            : dataset.data,
+        isProcessed: dataset.isProcessed || false
+    }));
+}
+
+/**
+ * Binary search based range filter for sorted data arrays.
+ */
+function binaryRangeFilter(data, minX, maxX) {
+    if (!data || data.length === 0) return [];
+
+    // Find start index (first element >= minX)
+    let lo = 0, hi = data.length;
+    while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (data[mid].x < minX) lo = mid + 1;
+        else hi = mid;
+    }
+    const startIdx = lo;
+
+    // Find end index (first element > maxX)
+    hi = data.length;
+    while (lo < hi) {
+        const mid = (lo + hi) >>> 1;
+        if (data[mid].x <= maxX) lo = mid + 1;
+        else hi = mid;
+    }
+    const endIdx = lo;
+
+    return data.slice(startIdx, endIdx);
+}
+
 export function resetChart() {
     if (chart && chart.data.datasets) chart.data.datasets.forEach(dataset => dataset.data = []);
     chartStartTime = null;
     chartMode = 'EXPANDING';
     dataPointBuffer = [];
     lastDataFlush = 0;
+    fullDataStore = [];
+    mcuTimeOrigin = null;
 }
 
 // Batch data point buffer for performance
@@ -306,9 +352,19 @@ let dataPointBuffer = [];
 let lastDataFlush = 0;
 const DATA_FLUSH_INTERVAL = 50; // Flush every 50ms
 
-export function addDataPoint(values, currentTime) {
-    if (!chartStartTime) chartStartTime = currentTime;
-    const elapsedSeconds = (currentTime - chartStartTime) / 1000;
+export function addDataPoint(values, timeInfo) {
+    let elapsedSeconds;
+
+    if (timeInfo && timeInfo.mcuMs !== undefined) {
+        // MCU timestamp (milliseconds from MCU boot)
+        if (!chartStartTime) chartStartTime = new Date();
+        if (!mcuTimeOrigin) mcuTimeOrigin = timeInfo.mcuMs;
+        elapsedSeconds = (timeInfo.mcuMs - mcuTimeOrigin) / 1000;
+    } else {
+        // Browser Date object
+        if (!chartStartTime) chartStartTime = timeInfo;
+        elapsedSeconds = (timeInfo - chartStartTime) / 1000;
+    }
 
     // Add to buffer instead of directly to chart
     dataPointBuffer.push({ values, elapsedSeconds });
@@ -324,21 +380,63 @@ export function addDataPoint(values, currentTime) {
 function flushDataPoints() {
     if (!chart || dataPointBuffer.length === 0) return;
 
-    // Add all buffered points at once
+    // Add all buffered points to both chart and full data store
     dataPointBuffer.forEach(({ values, elapsedSeconds }) => {
         values.forEach((value, i) => {
             if (chart.data.datasets[i]) {
                 chart.data.datasets[i].data.push({ x: elapsedSeconds, y: value });
             }
+            // Store in full data store for analysis
+            if (!fullDataStore[i]) fullDataStore[i] = [];
+            fullDataStore[i].push({ x: elapsedSeconds, y: value });
         });
     });
 
     dataPointBuffer = [];
+
+    // Downsample chart datasets if exceeding memory limit
+    chart.data.datasets.forEach((dataset, i) => {
+        if (!dataset.isTrendline && !dataset.isProcessed && dataset.data.length > MAX_DATA_POINTS) {
+            dataset.data = downsample(dataset.data, MAX_DATA_POINTS);
+        }
+    });
+}
+
+/**
+ * Downsample data by keeping every Nth point (LTTB-like simplification).
+ */
+function downsample(data, targetPoints) {
+    if (data.length <= targetPoints) return data;
+    const step = Math.ceil(data.length / targetPoints);
+    const result = [];
+    for (let i = 0; i < data.length; i += step) {
+        result.push(data[i]);
+    }
+    // Always include last point
+    if (result[result.length - 1] !== data[data.length - 1]) {
+        result.push(data[data.length - 1]);
+    }
+    return result;
 }
 
 // Ensure buffer is flushed when needed
 export function forceFlushData() {
     flushDataPoints();
+}
+
+/**
+ * Export chart as PNG image download.
+ */
+export function exportChartImage() {
+    if (!chart) return;
+    const url = chart.toBase64Image('image/png', 1);
+    const link = document.createElement('a');
+    const now = new Date();
+    const dateStr = now.toISOString().slice(0, 10);
+    const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '');
+    link.download = `Bowerbird_PRO_chart_${dateStr}_${timeStr}.png`;
+    link.href = url;
+    link.click();
 }
 
 export function renderLoop() {
@@ -384,6 +482,61 @@ export function renderLoop() {
         });
     }
     updateXAxisTicks(chart.options.scales.x.max - chart.options.scales.x.min);
+    chart.update('none');
+}
+
+// --- Individual Y-Axis Support ---
+export function setIndividualYAxis(enabled) {
+    if (!chart) return;
+    if (enabled) {
+        // Create a separate y-axis for each sensor dataset
+        chart.data.datasets.forEach((dataset, i) => {
+            if (dataset.isTrendline || dataset.isProcessed) return;
+            const axisId = i === 0 ? 'y' : `y_sensor_${i}`;
+            dataset.yAxisID = axisId;
+            if (i > 0) {
+                chart.options.scales[axisId] = {
+                    type: 'linear',
+                    display: true,
+                    position: i % 2 === 0 ? 'left' : 'right',
+                    title: { display: true, text: dataset.label, color: dataset.borderColor },
+                    ticks: { color: dataset.borderColor },
+                    grid: { drawOnChartArea: i === 0 }
+                };
+            } else {
+                chart.options.scales.y.title.text = dataset.label;
+                chart.options.scales.y.title.color = dataset.borderColor;
+                chart.options.scales.y.ticks.color = dataset.borderColor;
+            }
+        });
+    } else {
+        // Remove extra y-axes and reset all sensor datasets to 'y'
+        const keysToRemove = Object.keys(chart.options.scales).filter(k => k.startsWith('y_sensor_'));
+        keysToRemove.forEach(k => delete chart.options.scales[k]);
+        chart.data.datasets.forEach(dataset => {
+            if (!dataset.isTrendline && !dataset.isProcessed && dataset.yAxisID !== 'y1') {
+                dataset.yAxisID = 'y';
+            }
+        });
+        chart.options.scales.y.title.color = '#555';
+        chart.options.scales.y.ticks.color = '#555';
+    }
+    chart.update();
+}
+
+// --- Y-Axis Range Manual Setting ---
+export function setYAxisRange(min, max) {
+    if (!chart) return;
+    if (min === '' || min === null || min === undefined || isNaN(min)) {
+        delete chart.options.scales.y.min;
+    } else {
+        chart.options.scales.y.min = Number(min);
+    }
+    if (max === '' || max === null || max === undefined || isNaN(max)) {
+        delete chart.options.scales.y.max;
+    } else {
+        chart.options.scales.y.max = Number(max);
+    }
     chart.update('none');
 }
 

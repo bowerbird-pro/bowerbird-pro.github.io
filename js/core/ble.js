@@ -3,17 +3,22 @@ import { translate } from '../utils/i18n.js';
 
 let bleDevice;
 let bleCharacteristic;
+let bleTxCharacteristic;
 const BLE_SERVICE_UUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
 const BLE_CHAR_UUID_RECEIVE = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+const BLE_CHAR_UUID_TRANSMIT = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
 const bleDecoder = new TextDecoder('utf-8');
 let blePartialLine = '';
 
-export async function connectBLE(deviceType, onDataCallback, onDisconnectCallback) {
+export async function connectBLE(deviceType, onDataCallback, onDisconnectCallback, customUUIDs) {
     if (!('bluetooth' in navigator)) return alert(translate('alertNoWebBluetooth') || 'Web Bluetooth API is not supported.');
 
+    const serviceUUID = (customUUIDs && customUUIDs.service) ? customUUIDs.service : BLE_SERVICE_UUID;
+    const rxUUID = (customUUIDs && customUUIDs.rx) ? customUUIDs.rx : BLE_CHAR_UUID_RECEIVE;
+
     const opts = deviceType === 'microbit'
-        ? { filters: [{ namePrefix: "BBC micro:bit" }], optionalServices: [BLE_SERVICE_UUID] }
-        : { filters: [{ services: [BLE_SERVICE_UUID] }] };
+        ? { filters: [{ namePrefix: "BBC micro:bit" }], optionalServices: [serviceUUID] }
+        : { filters: [{ services: [serviceUUID] }] };
 
     try {
         logMessage('logBleScanning');
@@ -27,8 +32,15 @@ export async function connectBLE(deviceType, onDataCallback, onDisconnectCallbac
         const server = await bleDevice.gatt.connect();
         await requestWakeLock();
 
-        const service = await server.getPrimaryService(BLE_SERVICE_UUID);
-        bleCharacteristic = await service.getCharacteristic(BLE_CHAR_UUID_RECEIVE);
+        const service = await server.getPrimaryService(serviceUUID);
+        bleCharacteristic = await service.getCharacteristic(rxUUID);
+
+        // Try to get TX characteristic for sending data
+        try {
+            bleTxCharacteristic = await service.getCharacteristic(BLE_CHAR_UUID_TRANSMIT);
+        } catch (e) {
+            bleTxCharacteristic = null;
+        }
 
         await bleCharacteristic.startNotifications();
 
@@ -63,6 +75,7 @@ function onBLEDisconnected(callback) {
         bleCharacteristic.removeEventListener('characteristicvaluechanged', bleCharacteristic._notificationHandler);
     }
     bleCharacteristic = null;
+    bleTxCharacteristic = null;
     bleDevice = null;
     if (callback) callback();
 }
@@ -75,6 +88,12 @@ function handleBleNotification(event, callback) {
     lines.forEach(line => {
         if (line.trim()) callback(line.trim());
     });
+}
+
+export async function sendBLE(data) {
+    if (!bleTxCharacteristic) return;
+    const encoder = new TextEncoder();
+    await bleTxCharacteristic.writeValue(encoder.encode(data));
 }
 
 export function isBleConnected() {

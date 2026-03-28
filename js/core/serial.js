@@ -66,6 +66,17 @@ async function readFromSerial(onDataCallback) {
     }
 }
 
+export async function sendSerial(data) {
+    if (!serialPort || !serialPort.writable) return;
+    const writer = serialPort.writable.getWriter();
+    try {
+        const encoder = new TextEncoder();
+        await writer.write(encoder.encode(data));
+    } finally {
+        writer.releaseLock();
+    }
+}
+
 export function isSerialConnected() {
     return !!serialPort;
 }

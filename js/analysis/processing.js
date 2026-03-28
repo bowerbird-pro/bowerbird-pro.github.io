@@ -32,12 +32,18 @@ export function calculateMovingAverage(data, windowSize) {
 
 /**
  * Computes Savitzky-Golay smoothing.
- * Implements a simplified 5-point quadratic/cubic smoothing.
- * Coefficients: [-3, 12, 17, 12, -3] / 35
- * @param {Array<{x: number, y: number}>} data 
+ * For windowSize 5, uses the exact SG coefficients [-3, 12, 17, 12, -3] / 35.
+ * For other window sizes, falls back to moving average as a practical approximation.
+ * @param {Array<{x: number, y: number}>} data
+ * @param {number} windowSize - Window size (odd number, default 5)
  * @returns {Array<{x: number, y: number}>}
  */
-export function calculateSavitzkyGolay(data) {
+export function calculateSavitzkyGolay(data, windowSize = 5) {
+    if (windowSize !== 5) {
+        // Fallback to moving average for non-5 windows
+        return calculateMovingAverage(data, windowSize);
+    }
+
     if (data.length < 5) return data; // Not enough points
 
     const smoothed = [];
@@ -61,4 +67,35 @@ export function calculateSavitzkyGolay(data) {
     smoothed.push(data[data.length - 1]);
 
     return smoothed;
+}
+
+/**
+ * Detects outliers using IQR (Interquartile Range) method.
+ * @param {Array<{x: number, y: number}>} data
+ * @param {number} factor - IQR multiplier (default 1.5)
+ * @returns {{ cleaned: Array<{x:number, y:number}>, outliers: Array<{x:number, y:number}> }}
+ */
+export function detectOutliers(data, factor = 1.5) {
+    if (!data || data.length < 4) return { cleaned: data, outliers: [] };
+
+    const sorted = data.map(p => p.y).slice().sort((a, b) => a - b);
+    const n = sorted.length;
+    const q1 = sorted[Math.floor(n * 0.25)];
+    const q3 = sorted[Math.floor(n * 0.75)];
+    const iqr = q3 - q1;
+    const lowerBound = q1 - factor * iqr;
+    const upperBound = q3 + factor * iqr;
+
+    const cleaned = [];
+    const outliers = [];
+
+    for (const point of data) {
+        if (point.y < lowerBound || point.y > upperBound) {
+            outliers.push(point);
+        } else {
+            cleaned.push(point);
+        }
+    }
+
+    return { cleaned, outliers };
 }

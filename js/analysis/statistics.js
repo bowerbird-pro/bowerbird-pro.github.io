@@ -15,15 +15,24 @@ export function calculateBasicStats(data) {
     }
 
     const count = data.length;
-    const min = Math.min(...data);
-    const max = Math.max(...data);
-    
-    const sum = data.reduce((a, b) => a + b, 0);
+
+    // Loop-based min/max to avoid stack overflow with large datasets (>65K points)
+    let min = Infinity, max = -Infinity, sum = 0;
+    for (let i = 0; i < count; i++) {
+        const v = data[i];
+        if (v < min) min = v;
+        if (v > max) max = v;
+        sum += v;
+    }
     const mean = sum / count;
 
-    const squaredDiffs = data.map(value => Math.pow(value - mean, 2));
-    const avgSquaredDiff = squaredDiffs.reduce((a, b) => a + b, 0) / count;
-    const stdDev = Math.sqrt(avgSquaredDiff);
+    // Single-pass stdDev calculation (avoids creating intermediate arrays)
+    let sqDiffSum = 0;
+    for (let i = 0; i < count; i++) {
+        const diff = data[i] - mean;
+        sqDiffSum += diff * diff;
+    }
+    const stdDev = Math.sqrt(sqDiffSum / count);
 
     return {
         count,

@@ -1,7 +1,7 @@
 import { calculateBasicStats } from './statistics.js';
 import { calculateRegression } from './regression.js';
 import { calculateDerivative, calculateIntegral } from './calculus.js';
-import { calculateMovingAverage, calculateSavitzkyGolay } from './processing.js';
+import { calculateMovingAverage, calculateSavitzkyGolay, detectOutliers } from './processing.js';
 import * as ChartHandler from '../visualization/chart-handler.js';
 import { translate } from '../utils/i18n.js';
 
@@ -10,13 +10,19 @@ const ui = {
     btnDerivative: document.getElementById('btnDerivative'),
     btnIntegral: document.getElementById('btnIntegral'),
     smoothingToggle: document.getElementById('smoothingToggle'),
-    smoothingType: document.getElementById('smoothingType')
+    smoothingType: document.getElementById('smoothingType'),
+    smoothingWindow: document.getElementById('smoothingWindow'),
+    smoothingWindowValue: document.getElementById('smoothingWindowValue')
 };
 
 let currentRegressionType = 'linear';
 // Smoothing state
 let isSmoothingEnabled = false;
 let currentSmoothingType = 'ma';
+// Analysis scope: 'viewport' or 'all'
+let analysisScope = 'viewport';
+// Outlier removal state
+let isOutlierRemovalEnabled = false;
 
 const trendlineStates = new Map(); // Tracks checking state by sensor label
 
@@ -63,10 +69,19 @@ export function initAnalysisUI() {
     window.onChartUpdate = throttledUpdateAnalysis;
 
     // Attach listeners to static controls
+    const polynomialOrderSelect = document.getElementById('polynomialOrder');
     document.getElementById('regressionTypeSelect').addEventListener('change', (e) => {
         currentRegressionType = e.target.value;
+        if (polynomialOrderSelect) {
+            polynomialOrderSelect.style.display = (e.target.value === 'polynomial') ? '' : 'none';
+        }
         updateAnalysis();
     });
+    if (polynomialOrderSelect) {
+        polynomialOrderSelect.addEventListener('change', () => {
+            updateAnalysis();
+        });
+    }
 
     // Calculus Buttons
     if (ui.btnDerivative) {
@@ -76,17 +91,42 @@ export function initAnalysisUI() {
         ui.btnIntegral.addEventListener('click', () => applyCalculus('integral'));
     }
 
+    // Outlier Removal Toggle
+    const outlierToggle = document.getElementById('outlierToggle');
+    if (outlierToggle) {
+        outlierToggle.addEventListener('change', (e) => {
+            isOutlierRemovalEnabled = e.target.checked;
+            updateAnalysis();
+        });
+    }
+
+    // Analysis Scope Toggle
+    const scopeToggle = document.getElementById('analysisScopeToggle');
+    if (scopeToggle) {
+        scopeToggle.addEventListener('change', (e) => {
+            analysisScope = e.target.checked ? 'all' : 'viewport';
+            updateAnalysis();
+        });
+    }
+
     // Smoothing Controls
     if (ui.smoothingToggle) {
         ui.smoothingToggle.addEventListener('change', (e) => {
             isSmoothingEnabled = e.target.checked;
             ui.smoothingType.disabled = !isSmoothingEnabled;
+            if (ui.smoothingWindow) ui.smoothingWindow.disabled = !isSmoothingEnabled;
             updateAnalysis();
         });
     }
     if (ui.smoothingType) {
         ui.smoothingType.addEventListener('change', (e) => {
             currentSmoothingType = e.target.value;
+            updateAnalysis();
+        });
+    }
+    if (ui.smoothingWindow) {
+        ui.smoothingWindow.addEventListener('input', (e) => {
+            if (ui.smoothingWindowValue) ui.smoothingWindowValue.textContent = e.target.value;
             updateAnalysis();
         });
     }
@@ -167,7 +207,9 @@ function removeCalculusDatasets(suffix) {
 }
 
 function updateAnalysis() {
-    const visibleDatasets = ChartHandler.getVisibleData();
+    const visibleDatasets = analysisScope === 'all'
+        ? ChartHandler.getAllData()
+        : ChartHandler.getVisibleData();
 
     if (!visibleDatasets || visibleDatasets.length === 0 || visibleDatasets[0].data.length === 0) {
         ui.analysisResult.innerHTML = `<div class="analysis-placeholder" data-translate="selectRangeHint">${translate('selectRangeHint') || 'Select a range on the chart.'}</div>`;
@@ -190,6 +232,20 @@ function updateAnalysis() {
         let workingData = dataset.data;
         let displayLabel = dataset.label;
 
+        // Apply outlier removal if enabled
+        if (isOutlierRemovalEnabled && !dataset.isProcessed) {
+            const { cleaned, outliers } = detectOutliers(dataset.data);
+            workingData = cleaned;
+            // Show outlier points as red markers on chart
+            if (outliers.length > 0) {
+                ChartHandler.addProcessedDataset(outliers, `${dataset.label} (Outliers)`, '#FF0000', false);
+            } else {
+                ChartHandler.removeProcessedDataset(`${dataset.label} (Outliers)`);
+            }
+        } else if (!dataset.isProcessed) {
+            ChartHandler.removeProcessedDataset(`${dataset.label} (Outliers)`);
+        }
+
         // Apply smoothing if enabled and this is a raw sensor
         if (isSmoothingEnabled && !dataset.isProcessed && !dataset.isTrendline) { // Add isTrendline check if exposed
             // We want to visualize smoothed data.
@@ -197,10 +253,11 @@ function updateAnalysis() {
             // Option 2: Plot smoothed line on chart.
 
             let smoothed = [];
+            const windowSize = ui.smoothingWindow ? parseInt(ui.smoothingWindow.value, 10) : 5;
             if (currentSmoothingType === 'ma') {
-                smoothed = calculateMovingAverage(dataset.data, 5); // Window 5
+                smoothed = calculateMovingAverage(dataset.data, windowSize);
             } else {
-                smoothed = calculateSavitzkyGolay(dataset.data);
+                smoothed = calculateSavitzkyGolay(dataset.data, windowSize);
             }
 
             // Update chart with smoothed data overlay
@@ -218,7 +275,9 @@ function updateAnalysis() {
 
         const dataValues = workingData.map(p => p.y);
         const stats = calculateBasicStats(dataValues);
-        const regression = calculateRegression(workingData, currentRegressionType);
+        const polyOrder = document.getElementById('polynomialOrder');
+        const order = (polyOrder && currentRegressionType === 'polynomial') ? parseInt(polyOrder.value, 10) : undefined;
+        const regression = calculateRegression(workingData, currentRegressionType, order);
 
         // Check if this sensor has trendline enabled
         const isTrendlineEnabled = trendlineStates.get(dataset.label) || false;

@@ -4,7 +4,7 @@
  * @param {string} type - 'linear', 'polynomial', 'exponential', 'power', 'logarithmic'
  * @returns {object|null} Object containing equation parameters, rSquared, formula, and predict function.
  */
-export function calculateRegression(points, type = 'linear') {
+export function calculateRegression(points, type = 'linear', order) {
     if (!points || points.length < 2) return null;
 
     // Filter invalid points for specific models
@@ -17,7 +17,7 @@ export function calculateRegression(points, type = 'linear') {
 
     switch (type) {
         case 'polynomial':
-            return calculatePolynomialRegression(validPoints, 2); // Default to 2nd order
+            return calculatePolynomialRegression(validPoints, order || 2);
         case 'exponential':
             return calculateExponentialRegression(validPoints);
         case 'power':
@@ -59,11 +59,12 @@ function calculateLinearRegression(points) {
 }
 
 function calculatePolynomialRegression(points, order = 2) {
-    // Solving Ax = B for coefficients a, b, c...
-    // For 2nd order: y = ax^2 + bx + c
-    // We need sums of x^0 to x^4
+    // Solving Ax = B for coefficients a0, a1, ..., a_order
+    // y = a_order * x^order + ... + a1 * x + a0
 
     const n = points.length;
+    if (n <= order) return null; // Need more points than the order
+
     const lhs = []; // Matrix A
     const rhs = []; // Vector B
 
@@ -86,18 +87,39 @@ function calculatePolynomialRegression(points, order = 2) {
     const coeffs = gaussianElimination(lhs, rhs);
     if (!coeffs) return null;
 
-    // coeffs[0] is c (x^0), coeffs[1] is b (x^1), coeffs[2] is a (x^2)
-    const [c, b, a] = coeffs;
-
-    const predict = (x) => a * x * x + b * x + c;
+    // coeffs[0] is a0 (x^0), coeffs[1] is a1 (x^1), ..., coeffs[order] is a_order (x^order)
+    const predict = (x) => {
+        let y = 0;
+        for (let i = 0; i <= order; i++) {
+            y += coeffs[i] * Math.pow(x, i);
+        }
+        return y;
+    };
     const rSquared = calculateRSquared(points, predict);
+
+    // Build formula string dynamically
+    const superscripts = ['', '', '\u00B2', '\u00B3', '\u2074', '\u2075'];
+    let formulaParts = [];
+    for (let i = order; i >= 0; i--) {
+        const c = coeffs[i];
+        const cStr = c.toFixed(4);
+        if (i === 0) {
+            formulaParts.push((c >= 0 && formulaParts.length > 0 ? '+ ' : '') + cStr);
+        } else if (i === 1) {
+            formulaParts.push((c >= 0 && formulaParts.length > 0 ? '+ ' : '') + cStr + 'x');
+        } else {
+            const sup = i < superscripts.length ? superscripts[i] : `^${i}`;
+            formulaParts.push((c >= 0 && formulaParts.length > 0 ? '+ ' : '') + cStr + 'x' + sup);
+        }
+    }
+    const formula = 'y = ' + formulaParts.join(' ');
 
     return {
         type: 'polynomial',
         points: n,
-        parameters: { a, b, c },
+        parameters: { coefficients: coeffs },
         rSquared,
-        formula: `y = ${a.toFixed(4)}x² ${b >= 0 ? '+' : ''} ${b.toFixed(4)}x ${c >= 0 ? '+' : ''} ${c.toFixed(4)}`,
+        formula,
         predict
     };
 }
