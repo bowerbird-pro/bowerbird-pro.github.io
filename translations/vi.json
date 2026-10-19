@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "Phát hiện phiên chưa lưu ({minutes} phút trước, {rows} hàng). Khôi phục?",
   "csvElapsed": "Thời gian đã trôi (giây)",
   "alertCannotChangeSensorCount": "Không thể thay đổi số lượng cảm biến trong khi đang ghi.",
-  "logSampleRate30s": "Tốc độ lấy mẫu trung bình: {rate} pts/s (30 giây)"
+  "logSampleRate30s": "Tốc độ lấy mẫu trung bình: {rate} pts/s (30 giây)",
+  "viewSplit": "Chia khung",
+  "viewOverlay": "Chồng lên",
+  "viewNormalize": "So hình dạng",
+  "viewDual": "Hai trục Y",
+  "viewSplitHint": "Gom các cảm biến có dải giá trị gần nhau vào các khung xếp chồng dùng chung trục thời gian",
+  "viewOverlayHint": "Vẽ tất cả cảm biến trên một trục Y",
+  "viewNormalizeHint": "Đưa min–max đang thấy của từng cảm biến về 0–100% để so hình dạng và thời điểm",
+  "viewDualHint": "Trục Y trái và phải (chỉ khi có 2 cảm biến)",
+  "chartNormalizedAxis": "0–100% (dải của từng cảm biến)"
 }

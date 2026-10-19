@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "Nicht gespeicherte Sitzung gefunden (vor {minutes} Min., {rows} Zeilen). Wiederherstellen?",
   "csvElapsed": "Vergangene Zeit (s)",
   "alertCannotChangeSensorCount": "Die Sensoranzahl kann während der Aufzeichnung nicht geändert werden.",
-  "logSampleRate30s": "Durchschnittliche Abtastrate: {rate} pts/s (30s)"
+  "logSampleRate30s": "Durchschnittliche Abtastrate: {rate} pts/s (30s)",
+  "viewSplit": "Geteilt",
+  "viewOverlay": "Überlagert",
+  "viewNormalize": "Form",
+  "viewDual": "Zwei Y-Achsen",
+  "viewSplitHint": "Sensoren mit ähnlichem Bereich in übereinanderliegende Felder mit gemeinsamer Zeitachse",
+  "viewOverlayHint": "Alle Sensoren auf einer Y-Achse",
+  "viewNormalizeHint": "Sichtbares Min–Max jedes Sensors auf 0–100 % skalieren, um Form und Zeitpunkt zu vergleichen",
+  "viewDualHint": "Linke und rechte Y-Achse (nur bei 2 Sensoren)",
+  "chartNormalizedAxis": "0–100 % (je Sensor)"
 }

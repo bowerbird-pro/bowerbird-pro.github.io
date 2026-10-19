@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "Session non enregistrée trouvée (il y a {minutes} min, {rows} lignes). Restaurer ?",
   "csvElapsed": "Temps écoulé (s)",
   "alertCannotChangeSensorCount": "Impossible de modifier le nombre de capteurs pendant l'enregistrement.",
-  "logSampleRate30s": "Taux d'échantillonnage moyen : {rate} pts/s (30s)"
+  "logSampleRate30s": "Taux d'échantillonnage moyen : {rate} pts/s (30s)",
+  "viewSplit": "Séparer",
+  "viewOverlay": "Superposer",
+  "viewNormalize": "Forme",
+  "viewDual": "Double axe Y",
+  "viewSplitHint": "Regroupe les capteurs de plage similaire en panneaux empilés partageant l'axe du temps",
+  "viewOverlayHint": "Tous les capteurs sur un seul axe Y",
+  "viewNormalizeHint": "Ramène le min–max visible de chaque capteur à 0–100 % pour comparer forme et instant",
+  "viewDualHint": "Axes Y gauche et droit (seulement avec 2 capteurs)",
+  "chartNormalizedAxis": "0–100 % (plage de chaque capteur)"
 }

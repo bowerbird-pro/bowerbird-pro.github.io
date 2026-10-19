@@ -66,5 +66,9 @@ export function updatePageText(translations) {
         const key = element.getAttribute('data-translate');
         if (translations[key]) element.textContent = translations[key];
     });
+    document.querySelectorAll('[data-translate-title]').forEach(element => {
+        const key = element.getAttribute('data-translate-title');
+        if (translations[key]) element.title = translations[key];
+    });
     if (translations.pageTitleApp) document.title = translations.pageTitleApp;
 }

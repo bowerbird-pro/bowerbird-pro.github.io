@@ -43,7 +43,7 @@ const ui = {
     languageSelector: document.getElementById('languageSelector'),
     baudRateSelect: document.getElementById('baudRate'),
     delimiterSelect: document.getElementById('delimiter'),
-    individualYAxisCheckbox: document.getElementById('individualYAxis'),
+    viewModeButtons: document.querySelectorAll('[data-view-mode]'),
     yAxisMinInput: document.getElementById('yAxisMin'),
     yAxisMaxInput: document.getElementById('yAxisMax'),
     statusLed: document.getElementById('statusLed'),
@@ -146,13 +146,13 @@ function setupEventListeners() {
     }
 
     // Zoom Buttons
-    document.querySelectorAll('.chart-controls button').forEach(btn => {
+    document.querySelectorAll('.chart-controls button[data-zoom]').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const zoom = e.target.getAttribute('data-zoom');
             ChartHandler.setZoomLevel(zoom);
 
             // Update active state
-            document.querySelectorAll('.chart-controls button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.chart-controls button[data-zoom]').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
         });
     });
@@ -185,12 +185,14 @@ function setupEventListeners() {
         }
     });
 
-    // 4-4: Individual Y-Axis checkbox
-    if (ui.individualYAxisCheckbox) {
-        ui.individualYAxisCheckbox.addEventListener('change', (e) => {
-            ChartHandler.setIndividualYAxis(e.target.checked);
+    // 보기 모드 (나눠 보기 / 겹쳐 보기 / 모양 비교 / 좌우 Y축)
+    ui.viewModeButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.disabled) return;
+            ChartHandler.setViewMode(btn.getAttribute('data-view-mode'));
+            updateViewModeButtons();
         });
-    }
+    });
 
     // 4-5: Y-Axis Range inputs
     const handleYAxisRange = () => {
@@ -224,6 +226,25 @@ function setupEventListeners() {
             sendCommandInput.value = '';
         });
     }
+}
+
+// 지금 적용된 보기 모드를 표시하고, 좌우 Y축은 센서가 2개일 때만 누를 수 있게 한다.
+// Y min/max 수동 입력은 겹쳐 보기에서만 쓴다.
+function updateViewModeButtons() {
+    const mode = ChartHandler.getViewMode();
+    const dualOk = ChartHandler.canUseDualAxis();
+    const effective = (mode === 'dual' && !dualOk) ? 'split' : mode;
+    ui.viewModeButtons.forEach(btn => {
+        const m = btn.getAttribute('data-view-mode');
+        btn.classList.toggle('active', m === effective);
+        if (m === 'dual') btn.disabled = !dualOk;
+    });
+    const manual = effective === 'overlay';
+    [ui.yAxisMinInput, ui.yAxisMaxInput].forEach(input => {
+        if (!input) return;
+        input.disabled = !manual;
+        input.closest('label').style.opacity = manual ? '' : '0.4';
+    });
 }
 
 function updateConnectionUI() {
@@ -494,6 +515,7 @@ function stopLogging() {
 
     // Flush all pending buffers before stopping
     ChartHandler.forceFlushData();
+    ChartHandler.refreshLayout();
     flushLogBuffer();
 
     ui.startBtn.disabled = false;
@@ -563,6 +585,7 @@ function importCSV(file) {
         }
 
         ChartHandler.forceFlushData();
+        ChartHandler.refreshLayout();
         logMessage('logImportSuccess', { count: pointCount, sensors: importedNames.length });
     };
     reader.readAsText(file);
@@ -631,4 +654,5 @@ function updateSensorInputs(forceUpdate = false) {
     }
     sensorNames = newSensorNames;
     ChartHandler.updateChartDatasets(sensorNames);
+    updateViewModeButtons();
 }

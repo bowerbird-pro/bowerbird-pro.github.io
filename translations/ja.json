@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "未保存のセッションが見つかりました（{minutes}分前、{rows}行）。復元しますか？",
   "csvElapsed": "経過時間(秒)",
   "alertCannotChangeSensorCount": "ロギング中はセンサー数を変更できません。",
-  "logSampleRate30s": "平均サンプリングレート: {rate} pts/s (30秒)"
+  "logSampleRate30s": "平均サンプリングレート: {rate} pts/s (30秒)",
+  "viewSplit": "分割表示",
+  "viewOverlay": "重ねて表示",
+  "viewNormalize": "形を比較",
+  "viewDual": "左右Y軸",
+  "viewSplitHint": "値の範囲が近いセンサーをまとめ、時間軸を共有した上下のパネルに分けて描きます",
+  "viewOverlayHint": "すべてのセンサーを1つのY軸に重ねて描きます",
+  "viewNormalizeHint": "センサーごとに表示区間の最小〜最大を0〜100%に合わせ、変化の形とタイミングを比べます",
+  "viewDualHint": "センサーが2つのとき、左右のY軸を使います",
+  "chartNormalizedAxis": "0〜100%(センサーごとの範囲)"
 }

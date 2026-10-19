@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "미저장 세션이 발견되었습니다 ({minutes}분 전, {rows}행). 복원하시겠습니까?",
   "csvElapsed": "경과시간(초)",
   "alertCannotChangeSensorCount": "로깅 중에는 센서 수를 변경할 수 없습니다.",
-  "logSampleRate30s": "평균 샘플링 레이트: {rate} pts/s (30초)"
+  "logSampleRate30s": "평균 샘플링 레이트: {rate} pts/s (30초)",
+  "viewSplit": "나눠 보기",
+  "viewOverlay": "겹쳐 보기",
+  "viewNormalize": "모양 비교",
+  "viewDual": "좌우 Y축",
+  "viewSplitHint": "범위가 비슷한 센서끼리 묶어 위아래 칸으로 나눠 그립니다(시간축 공유)",
+  "viewOverlayHint": "모든 센서를 하나의 Y축에 겹쳐 그립니다",
+  "viewNormalizeHint": "센서마다 보이는 구간의 최소~최대를 0~100%로 맞춰 변화의 모양과 시점을 비교합니다",
+  "viewDualHint": "센서가 2개일 때 왼쪽·오른쪽 Y축을 따로 씁니다",
+  "chartNormalizedAxis": "0~100% (센서별 범위)"
 }

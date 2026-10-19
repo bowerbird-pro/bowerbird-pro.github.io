@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "Sessione non salvata trovata ({minutes} min fa, {rows} righe). Ripristinare?",
   "csvElapsed": "Tempo trascorso (s)",
   "alertCannotChangeSensorCount": "Impossibile modificare il numero di sensori durante la registrazione.",
-  "logSampleRate30s": "Frequenza di campionamento media: {rate} pts/s (30s)"
+  "logSampleRate30s": "Frequenza di campionamento media: {rate} pts/s (30s)",
+  "viewSplit": "Dividi",
+  "viewOverlay": "Sovrapponi",
+  "viewNormalize": "Forma",
+  "viewDual": "Doppio asse Y",
+  "viewSplitHint": "Raggruppa i sensori con intervallo simile in pannelli impilati con asse del tempo comune",
+  "viewOverlayHint": "Tutti i sensori su un unico asse Y",
+  "viewNormalizeHint": "Scala il min–max visibile di ogni sensore a 0–100% per confrontare forma e tempi",
+  "viewDualHint": "Assi Y sinistro e destro (solo con 2 sensori)",
+  "chartNormalizedAxis": "0–100% (intervallo di ogni sensore)"
 }

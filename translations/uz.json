@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "Saqlanmagan sessiya topildi ({minutes} daqiqa oldin, {rows} qator). Tiklansinmi?",
   "csvElapsed": "O'tgan vaqt (s)",
   "alertCannotChangeSensorCount": "Yozish paytida sensor sonini o'zgartirib bo'lmaydi.",
-  "logSampleRate30s": "O'rtacha namuna olish tezligi: {rate} pts/s (30s)"
+  "logSampleRate30s": "O'rtacha namuna olish tezligi: {rate} pts/s (30s)",
+  "viewSplit": "Boʻlish",
+  "viewOverlay": "Ustma-ust",
+  "viewNormalize": "Shakl",
+  "viewDual": "Ikki Y oʻqi",
+  "viewSplitHint": "Oraligʻi yaqin sensorlarni umumiy vaqt oʻqli ustma-ust panellarga ajratadi",
+  "viewOverlayHint": "Barcha sensorlar bitta Y oʻqida",
+  "viewNormalizeHint": "Har bir sensorning koʻrinadigan min–maks qiymatini 0–100% ga keltirib shakl va vaqtni solishtiradi",
+  "viewDualHint": "Chap va oʻng Y oʻqi (faqat 2 ta sensorda)",
+  "chartNormalizedAxis": "0–100% (har bir sensor oraligʻi)"
 }

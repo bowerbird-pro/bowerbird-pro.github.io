@@ -217,15 +217,18 @@
                 </div>
                 <div class="chart-container">
                     <div class="chart-controls" style="margin-bottom: 3px; display: flex; align-items: center; flex-wrap: nowrap; justify-content: flex-end; gap: 3px; white-space: nowrap; overflow-x: auto; font-size: 0.7rem;">
-                        <label style="color: #555; display: inline-flex; align-items: center; gap: 2px;">
-                            <input type="checkbox" id="individualYAxis" style="margin:0;">
-                            <span data-translate="individualYAxis">Y축</span>
+                        <div class="view-mode-group" role="group">
+                            <button class="btn-xs btn-outline" data-view-mode="split" data-translate="viewSplit" data-translate-title="viewSplitHint" title="범위가 비슷한 센서끼리 묶어 위아래 칸으로 나눠 그립니다">나눠 보기</button>
+                            <button class="btn-xs btn-outline" data-view-mode="overlay" data-translate="viewOverlay" data-translate-title="viewOverlayHint" title="모든 센서를 하나의 Y축에 겹쳐 그립니다">겹쳐 보기</button>
+                            <button class="btn-xs btn-outline" data-view-mode="normalize" data-translate="viewNormalize" data-translate-title="viewNormalizeHint" title="센서마다 보이는 구간의 최소~최대를 0~100%로 맞춰 모양을 비교합니다">모양 비교</button>
+                            <button class="btn-xs btn-outline" data-view-mode="dual" data-translate="viewDual" data-translate-title="viewDualHint" title="센서가 2개일 때 왼쪽·오른쪽 Y축을 씁니다">좌우 Y축</button>
+                        </div>
+                        <span style="border-left: 1px solid #ddd; margin: 0 2px; height: 14px;"></span>
+                        <label style="color: #555; display: inline-flex; align-items: center; gap: 1px;">
+                            Y<sub>min</sub><input type="number" id="yAxisMin" class="manual-y-range" style="width: 45px; padding: 1px 3px; font-size: 0.65rem;" placeholder="auto">
                         </label>
                         <label style="color: #555; display: inline-flex; align-items: center; gap: 1px;">
-                            Y<sub>min</sub><input type="number" id="yAxisMin" style="width: 45px; padding: 1px 3px; font-size: 0.65rem;" placeholder="auto">
-                        </label>
-                        <label style="color: #555; display: inline-flex; align-items: center; gap: 1px;">
-                            Y<sub>max</sub><input type="number" id="yAxisMax" style="width: 45px; padding: 1px 3px; font-size: 0.65rem;" placeholder="auto">
+                            Y<sub>max</sub><input type="number" id="yAxisMax" class="manual-y-range" style="width: 45px; padding: 1px 3px; font-size: 0.65rem;" placeholder="auto">
                         </label>
                         <span style="border-left: 1px solid #ddd; margin: 0 2px; height: 14px;"></span>
                         <button class="btn-xs btn-outline" data-zoom="1">1s</button>

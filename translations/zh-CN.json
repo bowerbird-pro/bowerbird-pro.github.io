@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "发现未保存的会话（{minutes}分钟前，{rows}行）。是否恢复？",
   "csvElapsed": "经过时间(秒)",
   "alertCannotChangeSensorCount": "记录过程中无法更改传感器数量。",
-  "logSampleRate30s": "平均采样率：{rate} pts/s（30秒）"
+  "logSampleRate30s": "平均采样率：{rate} pts/s（30秒）",
+  "viewSplit": "分栏",
+  "viewOverlay": "叠加",
+  "viewNormalize": "形状对比",
+  "viewDual": "左右Y轴",
+  "viewSplitHint": "将数值范围相近的传感器分组，上下分栏显示，共用时间轴",
+  "viewOverlayHint": "所有传感器画在同一个Y轴上",
+  "viewNormalizeHint": "将每个传感器可见区间的最小~最大缩放到0~100%，比较变化的形状和时间",
+  "viewDualHint": "有2个传感器时使用左右两个Y轴",
+  "chartNormalizedAxis": "0~100%（各传感器范围）"
 }

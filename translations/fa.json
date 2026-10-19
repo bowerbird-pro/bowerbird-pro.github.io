@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "نشست ذخیره نشده یافت شد ({minutes} دقیقه پیش، {rows} سطر). بازیابی شود؟",
   "csvElapsed": "زمان سپری شده (ثانیه)",
   "alertCannotChangeSensorCount": "تغییر تعداد سنسورها در حین ضبط ممکن نیست.",
-  "logSampleRate30s": "میانگین نرخ نمونه‌برداری: {rate} pts/s (30 ثانیه)"
+  "logSampleRate30s": "میانگین نرخ نمونه‌برداری: {rate} pts/s (30 ثانیه)",
+  "viewSplit": "تقسیم",
+  "viewOverlay": "هم‌پوشانی",
+  "viewNormalize": "شکل",
+  "viewDual": "دو محور Y",
+  "viewSplitHint": "حسگرهای با بازهٔ مشابه را در پنل‌های روی هم با محور زمان مشترک نشان می‌دهد",
+  "viewOverlayHint": "همهٔ حسگرها روی یک محور Y",
+  "viewNormalizeHint": "کمینه–بیشینهٔ نمایان هر حسگر را به ۰–۱۰۰٪ می‌برد تا شکل و زمان مقایسه شود",
+  "viewDualHint": "محور Y چپ و راست (فقط با ۲ حسگر)",
+  "chartNormalizedAxis": "۰–۱۰۰٪ (بازهٔ هر حسگر)"
 }

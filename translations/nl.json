@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "Niet-opgeslagen sessie gevonden ({minutes} min geleden, {rows} rijen). Herstellen?",
   "csvElapsed": "Verstreken tijd (s)",
   "alertCannotChangeSensorCount": "Kan het aantal sensoren niet wijzigen tijdens het loggen.",
-  "logSampleRate30s": "Gemiddelde samplefrequentie: {rate} pts/s (30s)"
+  "logSampleRate30s": "Gemiddelde samplefrequentie: {rate} pts/s (30s)",
+  "viewSplit": "Splitsen",
+  "viewOverlay": "Overlappen",
+  "viewNormalize": "Vorm",
+  "viewDual": "Dubbele Y-as",
+  "viewSplitHint": "Sensoren met vergelijkbaar bereik in gestapelde panelen met één tijdas",
+  "viewOverlayHint": "Alle sensoren op één Y-as",
+  "viewNormalizeHint": "Zichtbaar min–max van elke sensor schalen naar 0–100% om vorm en moment te vergelijken",
+  "viewDualHint": "Linker- en rechter-Y-as (alleen bij 2 sensoren)",
+  "chartNormalizedAxis": "0–100% (bereik per sensor)"
 }

@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "發現未儲存的工作階段（{minutes}分鐘前，{rows}列）。是否恢復？",
   "csvElapsed": "經過時間(秒)",
   "alertCannotChangeSensorCount": "記錄過程中無法變更感測器數量。",
-  "logSampleRate30s": "平均取樣率：{rate} pts/s（30秒）"
+  "logSampleRate30s": "平均取樣率：{rate} pts/s（30秒）",
+  "viewSplit": "分欄",
+  "viewOverlay": "疊加",
+  "viewNormalize": "形狀比較",
+  "viewDual": "左右Y軸",
+  "viewSplitHint": "將數值範圍相近的感測器分組，上下分欄顯示，共用時間軸",
+  "viewOverlayHint": "所有感測器畫在同一個Y軸上",
+  "viewNormalizeHint": "將每個感測器可見區間的最小~最大縮放到0~100%，比較變化的形狀與時間",
+  "viewDualHint": "有2個感測器時使用左右兩個Y軸",
+  "chartNormalizedAxis": "0~100%（各感測器範圍）"
 }

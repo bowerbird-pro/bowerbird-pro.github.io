@@ -333,6 +333,30 @@ body#page-index {
     border-color: #2196F3;
 }
 
+.btn-xs:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* 보기 모드 버튼 — 붙어 있는 한 묶음 */
+.view-mode-group {
+    display: inline-flex;
+}
+
+.view-mode-group .btn-xs {
+    border-radius: 0;
+    margin-left: -1px;
+}
+
+.view-mode-group .btn-xs:first-child {
+    border-radius: 4px 0 0 4px;
+    margin-left: 0;
+}
+
+.view-mode-group .btn-xs:last-child {
+    border-radius: 0 4px 4px 0;
+}
+
 .btn-outline {
     background: transparent;
     border: 1px solid #ddd;

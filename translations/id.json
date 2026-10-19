@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "Sesi yang belum disimpan ditemukan ({minutes} menit lalu, {rows} baris). Pulihkan?",
   "csvElapsed": "Waktu berlalu (detik)",
   "alertCannotChangeSensorCount": "Tidak dapat mengubah jumlah sensor saat pencatatan.",
-  "logSampleRate30s": "Rata-rata laju sampel: {rate} pts/s (30 detik)"
+  "logSampleRate30s": "Rata-rata laju sampel: {rate} pts/s (30 detik)",
+  "viewSplit": "Pisah",
+  "viewOverlay": "Tumpuk",
+  "viewNormalize": "Bentuk",
+  "viewDual": "Dua sumbu Y",
+  "viewSplitHint": "Kelompokkan sensor dengan rentang mirip ke panel bertumpuk dengan satu sumbu waktu",
+  "viewOverlayHint": "Gambar semua sensor pada satu sumbu Y",
+  "viewNormalizeHint": "Skalakan min–maks yang terlihat tiap sensor ke 0–100% untuk membandingkan bentuk dan waktu",
+  "viewDualHint": "Sumbu Y kiri dan kanan (hanya untuk 2 sensor)",
+  "chartNormalizedAxis": "0–100% (rentang tiap sensor)"
 }

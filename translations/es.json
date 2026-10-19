@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "Se encontró una sesión no guardada (hace {minutes} min, {rows} filas). ¿Restaurar?",
   "csvElapsed": "Tiempo transcurrido (s)",
   "alertCannotChangeSensorCount": "No se puede cambiar el número de sensores durante el registro.",
-  "logSampleRate30s": "Tasa de muestreo promedio: {rate} pts/s (30s)"
+  "logSampleRate30s": "Tasa de muestreo promedio: {rate} pts/s (30s)",
+  "viewSplit": "Dividir",
+  "viewOverlay": "Superponer",
+  "viewNormalize": "Forma",
+  "viewDual": "Doble eje Y",
+  "viewSplitHint": "Agrupa sensores de rango similar en paneles apilados con un eje de tiempo común",
+  "viewOverlayHint": "Dibuja todos los sensores en un solo eje Y",
+  "viewNormalizeHint": "Escala el mín–máx visible de cada sensor a 0–100 % para comparar forma y momento",
+  "viewDualHint": "Ejes Y izquierdo y derecho (solo con 2 sensores)",
+  "chartNormalizedAxis": "0–100 % (rango de cada sensor)"
 }

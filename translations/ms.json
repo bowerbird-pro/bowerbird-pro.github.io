@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "Sesi tidak disimpan ditemui ({minutes} min lalu, {rows} baris). Pulihkan?",
   "csvElapsed": "Masa berlalu (s)",
   "alertCannotChangeSensorCount": "Tidak boleh menukar bilangan sensor semasa pengelogan.",
-  "logSampleRate30s": "Kadar sampel purata: {rate} pts/s (30s)"
+  "logSampleRate30s": "Kadar sampel purata: {rate} pts/s (30s)",
+  "viewSplit": "Pisah",
+  "viewOverlay": "Tindih",
+  "viewNormalize": "Bentuk",
+  "viewDual": "Dua paksi Y",
+  "viewSplitHint": "Kumpulkan penderia julat serupa dalam panel bertindan dengan satu paksi masa",
+  "viewOverlayHint": "Lukis semua penderia pada satu paksi Y",
+  "viewNormalizeHint": "Skalakan min–maks yang kelihatan setiap penderia kepada 0–100% untuk membanding bentuk dan masa",
+  "viewDualHint": "Paksi Y kiri dan kanan (hanya untuk 2 penderia)",
+  "chartNormalizedAxis": "0–100% (julat setiap penderia)"
 }

@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "Unsaved session found ({minutes} min ago, {rows} rows). Restore?",
   "csvElapsed": "Elapsed(s)",
   "alertCannotChangeSensorCount": "Cannot change sensor count during logging.",
-  "logSampleRate30s": "Average sample rate: {rate} pts/s (30s)"
+  "logSampleRate30s": "Average sample rate: {rate} pts/s (30s)",
+  "viewSplit": "Split",
+  "viewOverlay": "Overlay",
+  "viewNormalize": "Shape",
+  "viewDual": "Dual Y",
+  "viewSplitHint": "Stack sensors with similar ranges into panels sharing one time axis",
+  "viewOverlayHint": "Draw all sensors on one Y axis",
+  "viewNormalizeHint": "Scale each sensor's visible min–max to 0–100% to compare shape and timing",
+  "viewDualHint": "Left and right Y axes (only with 2 sensors)",
+  "chartNormalizedAxis": "0–100% (per-sensor range)"
 }

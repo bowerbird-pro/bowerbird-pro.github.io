@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "Kaydedilmemiş oturum bulundu ({minutes} dk önce, {rows} satır). Geri yüklensin mi?",
   "csvElapsed": "Geçen süre (s)",
   "alertCannotChangeSensorCount": "Kayıt sırasında sensör sayısı değiştirilemez.",
-  "logSampleRate30s": "Ortalama örnekleme hızı: {rate} pts/s (30s)"
+  "logSampleRate30s": "Ortalama örnekleme hızı: {rate} pts/s (30s)",
+  "viewSplit": "Böl",
+  "viewOverlay": "Üst üste",
+  "viewNormalize": "Şekil",
+  "viewDual": "Çift Y ekseni",
+  "viewSplitHint": "Benzer aralıktaki sensörleri ortak zaman eksenli üst üste panellerde gösterir",
+  "viewOverlayHint": "Tüm sensörleri tek Y ekseninde çizer",
+  "viewNormalizeHint": "Her sensörün görünen min–maks değerini 0–100%'e ölçekleyerek şekli ve zamanı karşılaştırır",
+  "viewDualHint": "Sol ve sağ Y ekseni (yalnızca 2 sensörde)",
+  "chartNormalizedAxis": "0–100% (sensör aralığı)"
 }

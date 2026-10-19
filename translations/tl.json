@@ -105,5 +105,14 @@
   "sessionRestorePrompt": "May nahanap na hindi na-save na session ({minutes} min ang nakalipas, {rows} hanay). I-restore?",
   "csvElapsed": "Lumipas na oras (s)",
   "alertCannotChangeSensorCount": "Hindi mababago ang bilang ng sensor habang naglo-log.",
-  "logSampleRate30s": "Average na sampling rate: {rate} pts/s (30s)"
+  "logSampleRate30s": "Average na sampling rate: {rate} pts/s (30s)",
+  "viewSplit": "Hatiin",
+  "viewOverlay": "Patungin",
+  "viewNormalize": "Hugis",
+  "viewDual": "Dalawang Y-axis",
+  "viewSplitHint": "Pagsamahin ang mga sensor na magkalapit ang saklaw sa magkakapatong na panel na may iisang time axis",
+  "viewOverlayHint": "Iguhit ang lahat ng sensor sa iisang Y-axis",
+  "viewNormalizeHint": "I-scale sa 0–100% ang nakikitang min–max ng bawat sensor para maihambing ang hugis at oras",
+  "viewDualHint": "Kaliwa at kanang Y-axis (kapag 2 sensor lang)",
+  "chartNormalizedAxis": "0–100% (saklaw ng bawat sensor)"
 }
